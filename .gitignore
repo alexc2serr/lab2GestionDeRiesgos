@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Vercel local configuration
+.vercel/
+
+# Local environment variables
+.env*
+!.env.example
+
+# Logs
+*.log
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.vscode/
