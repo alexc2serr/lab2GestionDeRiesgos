@@ -6,13 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node --experimental-strip-types scripts/test-seguridad.ts"
   },
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
+    "lucide-react": "^0.475.0",
     "next": "^15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "lucide-react": "^0.475.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
@@ -24,4 +27,3 @@
     "typescript": "^5.7.3"
   }
 }
-

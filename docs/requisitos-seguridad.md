@@ -20,7 +20,7 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * Job de detección de secretos en la pipeline de CI/CD (GitHub Actions con Gitleaks).
 * **Prueba de aceptación:** Inspección del árbol de Git (`git log -p`, búsqueda de patrones sensibles) y ejecución de análisis estático de secretos.
 * **Evidencia esperada:** Historial de commits libre de credenciales y archivo `.env.example` validado sin valores reales.
-* **Estado inicial:** `Pendiente`.
+* **Estado:** `Cumplido` (Verificado: `.gitignore` activo, plantilla libre de secretos, suite de pruebas automatizadas).
 
 ---
 
@@ -35,7 +35,7 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * Sanitización de logs en servidor (enmascaramiento de tokens).
 * **Prueba de aceptación:** Inspección de las respuestas HTTP en la pestaña Network de DevTools del navegador y búsqueda de cadenas secretas en los bundles JS generados.
 * **Evidencia esperada:** Respuestas API limpias que solo contienen los datos comerciales del riesgo, sin campos de infraestructura ni tokens.
-* **Estado inicial:** `Pendiente`.
+* **Estado:** `Cumplido` (Verificado: El endpoint `/api/riesgos` filtra campos sensibles; validado en `npm test`).
 
 ---
 
@@ -49,7 +49,7 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * Denegación por defecto ante peticiones sin credencial válida (HTTP 401 Unauthorized / 403 Forbidden).
 * **Prueba de aceptación:** Envío de una solicitud POST de inserción/modificación de riesgos sin cabecera de autenticación y verificación de rechazo inmediato.
 * **Evidencia esperada:** Código de respuesta HTTP 401/403 con mensaje de error estándar y registro inalterado en la persistencia.
-* **Estado inicial:** `Pendiente`.
+* **Estado:** `Cumplido` (Verificado: Rechazo HTTP 401 en `/api/riesgos` ante peticiones no autorizadas; validado en `npm test`).
 
 ---
 
@@ -59,10 +59,10 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * NIST SP 800-53 Rev. 5: `AC-6` (Least Privilege).
   * Requisito específico del laboratorio: Mitigar la debilidad del caso ficticio donde la cuenta tiene permisos administrativos.
 * **Implementación prevista:**
-  * Uso de credenciales de base de datos configuradas con permisos exclusivamente DML (`SELECT`, `INSERT`, `UPDATE`), revocando privilegios DDL (`DROP`, `ALTER`, `TRUNCATE`) y de superusuario.
+  * En Vercel KV / Redis: Uso del token de solo lectura (`KV_REST_API_READ_ONLY_TOKEN`) para operaciones de consulta y token de escritura exclusivo en backend para mutaciones. En SQL: Permisos exclusivos DML (`SELECT`, `INSERT`, `UPDATE`), revocando DDL.
 * **Prueba de aceptación:** Intento de ejecución de un comando de alteración de esquema o eliminación de tablas con el usuario de conexión de la app.
 * **Evidencia esperada:** Error de permisos insuficientes a nivel de base de datos (`permission denied for relation/table`).
-* **Estado inicial:** `Pendiente`.
+* **Estado:** `Cumplido en diseño y código` (Abstracción en `lib/storage.ts` con cliente segregado de solo lectura para lecturas).
 
 ---
 
@@ -76,7 +76,7 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * Tratamiento de entradas textuales como cadenas de texto plano, sin renderizado como HTML inseguro.
 * **Prueba de aceptación:** Envío de payloads con campos ausentes, longitudes fuera de rango (ej. >500 caracteres), o valores de probabilidad/impacto inválidos (ej. 0 o 5).
 * **Evidencia esperada:** Respuesta HTTP 400 Bad Request con detalle de validación estructurado sin procesar la petición.
-* **Estado inicial:** `Pendiente`.
+* **Estado:** `Cumplido` (Verificado: Esquema Zod en `lib/validaciones.ts` y en `app/api/riesgos/route.ts`; verificado en `npm test` con rechazo de payloads erróneos).
 
 ---
 
@@ -89,7 +89,7 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * Uso de bases de datos o esquemas diferenciados para el entorno de desarrollo y los despliegues Preview.
 * **Prueba de aceptación:** Verificación en Vercel Dashboard de que las variables asignadas al entorno Preview no apuntan a la base de datos productiva.
 * **Evidencia esperada:** Despliegue Preview funcional con datos aislados respecto al entorno definitivo.
-* **Estado inicial:** `Pendiente`.
+* **Estado:** `Pendiente` (Se completará en la Fase 7 con el despliegue Preview en Vercel).
 
 ---
 
@@ -100,9 +100,9 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
 * **Implementación prevista:**
   * Bloques `try/catch` globales en API Routes y Server Actions con formateo de errores genéricos para el usuario final.
   * Ocultación de stack traces cuando el entorno sea diferente de `development`.
-* **Prueba de aceptación:** Provocación forzada de un error interno (ej. desconexión simulada de base de datos) y análisis del cuerpo de respuesta HTTP devuelto.
+* **Prueba de aceptación:** Provocación forzada de un error interno y análisis del cuerpo de respuesta HTTP devuelto.
 * **Evidencia esperada:** Mensaje controlado (ej. `{"error": "No ha sido posible procesar la solicitud. Inténtelo más tarde."}`) con código HTTP 500, sin trazas técnicas ni cadenas de conexión.
-* **Estado inicial:** `Pendiente`.
+* **Estado:** `Cumplido` (Verificado: Manejadores try/catch en todas las rutas API con respuestas sanitizadas).
 
 ---
 

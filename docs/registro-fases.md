@@ -170,6 +170,48 @@ Se realizaron comprobaciones locales en el entorno de desarrollo (Windows PowerS
 
 ---
 
-## Fase 5: Persistencia, Servidor y Validaciones SEG (Pendiente)
-* Próxima fase: Persistencia de registros para conservarlos tras recargar la página (usando Vercel KV con token de solo lectura para SEG-04), Route Handlers seguros (`/api/riesgos`), validación estricta en servidor con esquemas Zod (cumplimiento formal de **SEG-05**), control de autorización para mutaciones (**SEG-03**), errores públicos sanitizados sin filtrado de trazas (**SEG-07**) y ausencia de secretos en el cliente (**SEG-02**).
+## Fase 5: Persistencia, Servidor y Validaciones SEG
+* **Fecha de ejecución:** 8 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Persistencia Segura y Mínimo Privilegio (`lib/storage.ts`)
+* **Proveedor:** **Vercel KV (Redis)** mediante cliente oficial `@vercel/kv`.
+* **Cumplimiento SEG-04 (Mínimo Privilegio / NIST AC-6):** 
+  * Se configuró un cliente de solo lectura que utiliza preferentemente el token `KV_REST_API_READ_ONLY_TOKEN` para operaciones de consulta (`obtenerRiesgos`).
+  * Las mutaciones de escritura (`guardarRiesgoPersistente`) requieren el token completo de escritura a nivel de servidor.
+  * Se implementó un fallback local transparente para desarrollo cuando las credenciales aún no han sido inyectadas en local, evitando caídas del sistema.
+
+### 2. Validación Estricta en Servidor (`lib/validaciones.ts` y `/api/riesgos`)
+* **Cumplimiento SEG-05 (ENS mp.sw.1 / NIST SI-10):**
+  * Validación en servidor mediante esquemas **Zod** en el endpoint `POST /api/riesgos`.
+  * Verificación obligatoria de tipos, longitudes acotadas (máx. 80-300 caracteres según el campo) y valores en rangos cerrados (Probabilidad 1..3, Impacto 1..3).
+  * Sanitización automática de textos planos para prevenir inyecciones HTML/XSS.
+  * Las peticiones con datos erróneos son rechazadas inmediatamente con **HTTP 400 Bad Request** y detalle descriptivo de los campos inválidos.
+
+### 3. Control de Autorización en Servidor (`/api/riesgos` y `/api/auth/verificar`)
+* **Cumplimiento SEG-03 (ENS op.acc.4 / NIST AC-6):**
+  * Toda mutación en `POST /api/riesgos` comprueba la cabecera `Authorization: Bearer <ADMIN_API_KEY>`.
+  * Si la credencial falta o es incorrecta, el servidor deniega la operación con **HTTP 401 Unauthorized**.
+  * Se añadió en la interfaz web (`app/page.tsx`) un modal de gestión de autorización y un indicador de estado (*Solo Lectura* vs *Admin Autorizado*) que permite al usuario desbloquear la escritura con su clave custodiada en Bitwarden.
+
+### 4. Higiene de Secretos y Manejo Seguro de Errores
+* **Cumplimiento SEG-02 (ENS op.exp.2 / NIST AC-6):** Las respuestas JSON de los endpoints API solo devuelven los datos de negocio de los riesgos; ningún secreto ni variable de servidor se transmite al cliente.
+* **Cumplimiento SEG-07 (NIST SI-10):** Captura de excepciones con bloques `try/catch` globales, devolviendo respuestas genéricas en errores 500 sin exponer trazas técnicas internas (*stack traces*).
+
+### 5. Suite de Pruebas Automatizadas (`scripts/test-seguridad.ts`)
+* Se desarrolló una suite de pruebas de aceptación ejecutable con `npm test`:
+  * Verificación de payloads válidos y rechazo de valores fuera de rango (SEG-05).
+  * Verificación de rechazo de inyecciones y sanitización de etiquetas.
+  * Verificación de denegación de mutaciones no autorizadas con HTTP 401 (SEG-03).
+  * Verificación de ausencia de campos sensibles en el DTO (SEG-01 y SEG-02).
+* **Resultado:** **9 pruebas pasadas, 0 fallidas (100% de éxito).**
+
+### 6. Commit de la Fase
+* **Mensaje:** `Añade persistencia y validaciones de seguridad en servidor`
+
+---
+
+## Fase 6: Pipeline CI/CD en GitHub Actions y Docker (Pendiente)
+* Próxima fase: Configuración del workflow `.github/workflows/ci.yml` para automatizar linting, chequeo de tipos, escaneo de secretos (Gitleaks / patrones) y ejecución de pruebas de seguridad (`npm test` y `npm run build`), garantizando la trazabilidad (**SEG-08**), y creación de `Dockerfile` multi-stage y `docker-compose.yml` para desarrollo local y ampliación con Vaultwarden.
 

@@ -48,3 +48,4 @@ export function calcularNivelRiesgo(p: ProbabilidadValor, i: ImpactoValor): { pu
   }
   return { puntuacion, nivel };
 }
+

@@ -52,3 +52,4 @@ export const RIESGOS_INICIALES: Riesgo[] = [
     referenciaControl: "ENS op.acc.4 / NIST SP 800-53 AC-6 (Least Privilege)",
   },
 ];
+

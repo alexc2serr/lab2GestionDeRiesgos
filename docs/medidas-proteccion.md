@@ -82,3 +82,4 @@ Para demostrar de forma concluyente a la dirección que la medida protege el obj
 > ⚠️ **Aviso Metodológico:**  
 > En la metodología de este laboratorio, **la mera propuesta o diseño de una medida de protección NO reduce automáticamente la puntuación de riesgo**.  
 > El riesgo residual solo podrá recalcularse a la baja una vez que la medida haya sido técnicamente desplegada en el entorno y su eficacia haya sido corroborada mediante las pruebas de aceptación documentadas.
+

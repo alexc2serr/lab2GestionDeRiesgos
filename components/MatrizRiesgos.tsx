@@ -126,3 +126,4 @@ export default function MatrizRiesgos({ riesgos }: Props) {
     </div>
   );
 }
+

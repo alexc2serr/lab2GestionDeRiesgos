@@ -173,3 +173,4 @@ export default function PanelDireccion({ riesgos }: Props) {
     </div>
   );
 }
+
