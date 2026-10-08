@@ -55,3 +55,8 @@ git push -u origin chatgpt
 ```
 
 El repositorio debe crearse previamente como privado en GitHub. Git solicitará autenticación mediante el método configurado en el equipo; no se deben escribir contraseñas ni tokens en este README.
+
+## Seguridad
+
+- [Fuentes oficiales consultadas](./docs/fuentes.md)
+- [Requisitos académicos de seguridad](./docs/requisitos-seguridad.md)
