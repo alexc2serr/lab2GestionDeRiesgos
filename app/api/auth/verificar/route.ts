@@ -13,3 +13,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ valido: false }, { status: 400 });
   }
 }
+

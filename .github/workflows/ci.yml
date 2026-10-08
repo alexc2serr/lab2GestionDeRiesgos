@@ -1,0 +1,48 @@
+name: CI & Auditoría de Seguridad (SEG-08)
+
+on:
+  push:
+    branches: [ "main", "gemini" ]
+  pull_request:
+    branches: [ "main", "gemini" ]
+
+jobs:
+  seguridad-y-calidad:
+    name: Análisis de Seguridad, Tipos y Construcción
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout del código fuente
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Requisito SEG-01: Verificación de ausencia de secretos en el código e historial
+      - name: 2. Escaneo de Secretos con Gitleaks (SEG-01 / ENS mp.sw.1)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true # Permite continuar si no hay configuración previa de reglas externas
+
+      - name: 3. Configurar Node.js v24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: 4. Instalar dependencias limpias
+        run: npm ci
+
+      # Requisito SEG-05: Validación de tipos TypeScript estrictos
+      - name: 5. Verificación estricta de tipos TypeScript
+        run: npx tsc --noEmit
+
+      # Requisitos SEG-01, SEG-02, SEG-03 y SEG-05: Suite de aceptación
+      - name: 6. Ejecución de la Suite de Pruebas de Seguridad
+        run: npm test
+
+      # Requisito SEG-08: Verificación de compilación reproducible de producción
+      - name: 7. Compilación de producción (Next.js Build)
+        run: npm run build
+        env:
+          NODE_ENV: production

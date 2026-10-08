@@ -96,3 +96,4 @@ export async function restablecerRiesgos(): Promise<Riesgo[]> {
   memoriaLocalRiesgos = [...RIESGOS_INICIALES];
   return memoriaLocalRiesgos;
 }
+

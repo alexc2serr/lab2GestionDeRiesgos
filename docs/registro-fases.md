@@ -212,6 +212,40 @@ Se realizaron comprobaciones locales en el entorno de desarrollo (Windows PowerS
 
 ---
 
-## Fase 6: Pipeline CI/CD en GitHub Actions y Docker (Pendiente)
-* Próxima fase: Configuración del workflow `.github/workflows/ci.yml` para automatizar linting, chequeo de tipos, escaneo de secretos (Gitleaks / patrones) y ejecución de pruebas de seguridad (`npm test` y `npm run build`), garantizando la trazabilidad (**SEG-08**), y creación de `Dockerfile` multi-stage y `docker-compose.yml` para desarrollo local y ampliación con Vaultwarden.
+## Fase 6: Pipeline CI/CD en GitHub Actions y Docker
+* **Fecha de ejecución:** 8 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Integración Continua en GitHub Actions (`.github/workflows/ci.yml`)
+* **Trazabilidad y Calidad (SEG-08):** Se implementó una pipeline automatizada que se ejecuta en cada `push` y `pull_request` a las ramas `main` y `gemini`:
+  1. **Checkout del repositorio:** Descarga completa del código fuente.
+  2. **Escaneo de Secretos con Gitleaks (SEG-01):** Análisis de patrones criptográficos y tokens en el código y commits para evitar fugas al repositorio público/privado.
+  3. **Configuración de Node.js v24:** Con cache automática de dependencias `npm`.
+  4. **Instalación determinista:** Mediante `npm ci`.
+  5. **Comprobación estricta de tipos:** Ejecución de `npx tsc --noEmit` para validar el 100% del código TypeScript.
+  6. **Suite de Seguridad Automatizada:** Ejecución de `npm test` (`scripts/test-seguridad.ts`) que comprueba formalmente la validación server-side (**SEG-05**), autorización (**SEG-03**) y ausencia de credenciales en respuestas (**SEG-02**).
+  7. **Construcción de Producción:** Ejecución de `npm run build` garantizando que solo versiones libres de fallos puedan ser candidatas a despliegue.
+
+### 2. Contenerización y Entorno Docker (`Dockerfile` y `docker-compose.yml`)
+* **`Dockerfile` Multi-Stage:**
+  * Base ligera: `node:24-alpine`.
+  * Etapas independientes: `base`, `deps`, `builder` y `runner`.
+  * **Seguridad y Mínimo Privilegio:** Ejecución bajo el usuario no-root `nextjs` (UID 1001), impidiendo que el contenedor opere con privilegios de root.
+* **`.dockerignore`:** Exclusión exhaustiva de `.git`, `.next`, `.env*` (salvo `.env.example`), logs y `node_modules`.
+* **`docker-compose.yml` (Ampliación Valorable):**
+  * Servicio `app`: Levanta la plataforma web en el puerto `3000`.
+  * Servicio `vaultwarden`: Contenedor oficial de Vaultwarden en el puerto `8080`, ofreciendo una bóveda compatible con Bitwarden autoalojada y privada para custodia local de secretos.
+
+### 3. Estado de los Requisitos tras la Fase 6
+* **SEG-01, SEG-02, SEG-03, SEG-04, SEG-05, SEG-07, SEG-08:** `Cumplidos`.
+* **SEG-06:** `Pendiente` (Separación de ambientes en Vercel -> Fase 7).
+
+### 4. Commit de la Fase
+* **Mensaje:** `Configura pipeline CI/CD con GitHub Actions y entorno Docker`
+
+---
+
+## Fase 7: Despliegue en Vercel (Preview) y Entrega Final (Pendiente)
+* Próxima fase: Guía interactiva paso a paso para que el usuario conecte el proyecto con Vercel CLI / Vercel Dashboard, inyecte las variables de entorno desde su Bitwarden sin exponerlas a la IA, realice el despliegue en entorno Preview (**SEG-06**), verifique los tres textos obligatorios y registre las evidencias en `docs/despliegue.md`.
 

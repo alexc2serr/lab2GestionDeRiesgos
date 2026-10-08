@@ -125,3 +125,4 @@ export const RiesgoSchema = z.object({
 });
 
 export type RiesgoValidado = z.infer<typeof RiesgoSchema>;
+

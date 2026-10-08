@@ -68,4 +68,30 @@ La aplicación estará accesible en `http://localhost:3000`.
 ```bash
 # Comprobación de tipos y build de producción
 npm run build
+
+# Ejecución de la suite de pruebas de seguridad (SEG-01 a SEG-05)
+npm test
 ```
+
+---
+
+## 🐳 Ejecución con Docker y Vaultwarden (Ampliación)
+
+El proyecto incluye soporte contenerizado multi-stage para desarrollo y producción:
+
+```bash
+# Levantar la aplicación web y la bóveda local Vaultwarden (puerto 8080)
+docker compose up --build
+```
+* Aplicación web: `http://localhost:3000`
+* Bóveda local Vaultwarden (Bitwarden): `http://localhost:8080`
+
+---
+
+## 🔄 Integración Continua (GitHub Actions)
+
+El workflow [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) automatiza en cada push y pull request:
+1. Escaneo de secretos con **Gitleaks** (**SEG-01**).
+2. Verificación estricta de tipos TypeScript (**SEG-05**).
+3. Ejecución de pruebas de aceptación de seguridad (`npm test`) (**SEG-03**, **SEG-05**).
+4. Verificación de compilación de producción (**SEG-08**).

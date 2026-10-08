@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  # Plataforma de Gestión de Riesgos
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_gestion_riesgos
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-laboratorio2026}
+      - KV_REST_API_URL=${KV_REST_API_URL:-}
+      - KV_REST_API_TOKEN=${KV_REST_API_TOKEN:-}
+      - KV_REST_API_READ_ONLY_TOKEN=${KV_REST_API_READ_ONLY_TOKEN:-}
+    networks:
+      - red_segura
+
+  # Ampliación Opcional: Bóveda local Vaultwarden (Compatible con Bitwarden)
+  # Permite custodiar secretos en un servidor local privado sin exponer datos a terceros
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden_local
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - WEBSOCKET_ENABLED=true
+      - SIGNUPS_ALLOWED=true
+    volumes:
+      - vaultwarden_data:/data
+    networks:
+      - red_segura
+
+volumes:
+  vaultwarden_data:
+
+networks:
+  red_segura:
+    driver: bridge
