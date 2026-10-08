@@ -246,6 +246,46 @@ Se realizaron comprobaciones locales en el entorno de desarrollo (Windows PowerS
 
 ---
 
-## Fase 7: Despliegue en Vercel (Preview) y Entrega Final (Pendiente)
-* Próxima fase: Guía interactiva paso a paso para que el usuario conecte el proyecto con Vercel CLI / Vercel Dashboard, inyecte las variables de entorno desde su Bitwarden sin exponerlas a la IA, realice el despliegue en entorno Preview (**SEG-06**), verifique los tres textos obligatorios y registre las evidencias en `docs/despliegue.md`.
+## Fase 7: Despliegue en Vercel (Preview) y Entrega Final
+* **Fecha de ejecución:** 8 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Protocolo Soberano de Credenciales (Bitwarden Zero-Knowledge)
+* Cumpliendo de forma intransigente con el principio de mínima exposición (**SEG-01** y **SEG-02**), en ningún momento la IA accedió, leyó ni almacenó credenciales reales.
+* El usuario generó y custodió en su gestor de contraseñas **Bitwarden**:
+  * La clave maestra de administración `ADMIN_API_KEY`.
+  * Las credenciales de base de datos (`KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN`).
+* Siguiendo una guía interactiva paso a paso sin compartir pantalla ni textos sensibles, el usuario inyectó las variables de entorno de forma autónoma en el panel web de Vercel.
+
+### 2. Despliegue en Entorno Preview de Vercel (SEG-06)
+* **Proyecto en Vercel:** `laboratorio2-riesgos`.
+* **Entorno:** **Preview** (aislamiento de preproducción según requisitos del laboratorio).
+* **Base de datos conectada:** `bd-riesgos` mediante integración de Upstash for Redis / Vercel KV, segregada y con soporte para token de solo lectura (**SEG-04**).
+* **URL de Previsualización Operativa:**  
+  👉 **`https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app`**
+* **Endpoint de Persistencia API:**  
+  👉 `https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app/api/riesgos`
+
+### 3. Verificación de Criterios Obligatorios en el Entorno Desplegado
+* **Tres Textos Obligatorios del Caso:** Se verificó mediante solicitud HTTP que la URL en vivo renderiza fielmente y sin alteraciones:
+  1. *"Plataforma ficticia de análisis y gestión de riesgos para un servicio digital de salud (citas, historial clínico básico y recetas electrónicas) alojado en un centro de datos regional propio."*
+  2. *"Objetivos del servicio: Disponibilidad en horario laboral y urgencias (RTO < 4 h, RPO < 1 h). Confidencialidad de datos de salud (categoría especial bajo RGPD/LOPDGDD). Integridad de recetas y trazabilidad de accesos. Conservación de registros durante al menos cinco años."*
+  3. *"Amenazas y debilidades identificadas: Almacenamiento en soporte con fallos previos y copias de seguridad sin prueba periódica de restauración. Cuenta con permisos de administración sobre la base de datos utilizada para tareas cotidianas. Personal técnico sin formación periódica en procedimientos de respuesta ante incidentes."*
+* **API de Persistencia:** Verificado que `GET /api/riesgos` responde con código HTTP 200 y el JSON estructurado con los riesgos iniciales `RSG-001` y `RSG-002`, filtrando campos sensibles.
+* **Componentes Visuales:** Matriz 3x3 interactiva, Panel de Dirección con la respuesta justificada a la pregunta de cierre, Panel Técnico con planes de prueba y Formulario guiado de 4 bloques.
+
+### 4. Estado Final de los Requisitos (SEG-01 a SEG-08)
+* **SEG-01 (Secretos fuera de Git):** Cumplido (auditoría de repositorio limpia, Gitleaks en CI).
+* **SEG-02 (Secretos fuera del frontend y respuestas):** Cumplido (DTOs limpios, bundle seguro).
+* **SEG-03 (Autorización en servidor):** Cumplido (cabecera Bearer requerida en mutaciones, HTTP 401).
+* **SEG-04 (Mínimo privilegio en base de datos):** Cumplido (lecturas con token de solo lectura en `lib/storage.ts`).
+* **SEG-05 (Validación en servidor):** Cumplido (esquema Zod estricto con tipado y límites).
+* **SEG-06 (Separación de entornos):** Cumplido (despliegue formal en Vercel Preview con base aislada).
+* **SEG-07 (Errores sanitizados):** Cumplido (bloques try/catch globales sin stack traces).
+* **SEG-08 (Trazabilidad integral):** Cumplido (commits en rama `gemini`, CI en GitHub Actions y `docs/despliegue.md`).
+
+### 5. Documentación y Cierre
+* Completados y actualizados todos los entregables en la carpeta `docs/`.
+* Todo el trabajo ha sido preservado y versionado exclusivamente en la rama de entrega `gemini`.
 

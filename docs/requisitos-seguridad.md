@@ -89,7 +89,7 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * Uso de bases de datos o esquemas diferenciados para el entorno de desarrollo y los despliegues Preview.
 * **Prueba de aceptación:** Verificación en Vercel Dashboard de que las variables asignadas al entorno Preview no apuntan a la base de datos productiva.
 * **Evidencia esperada:** Despliegue Preview funcional con datos aislados respecto al entorno definitivo.
-* **Estado:** `Pendiente` (Se completará en la Fase 7 con el despliegue Preview en Vercel).
+* **Estado:** `Cumplido` (Verificado: Proyecto `laboratorio2-riesgos` desplegado en el entorno Preview de Vercel con URL `https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app`, conectado a base de datos aislada `bd-riesgos` vía Upstash for Redis y variables de entorno gestionadas por el usuario desde Bitwarden).
 
 ---
 
