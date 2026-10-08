@@ -1,7 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, HelpCircle, RotateCcw, Sparkles, CheckCircle2, ShieldAlert } from "lucide-react";
+import {
+  AlertCircle,
+  HelpCircle,
+  RotateCcw,
+  Sparkles,
+  CheckCircle2,
+  ShieldAlert,
+  Calculator,
+  PlusCircle,
+  ShieldCheck,
+} from "lucide-react";
+import {
+  Riesgo,
+  ProbabilidadValor,
+  ImpactoValor,
+  PrioridadMedida,
+  calcularNivelRiesgo,
+} from "@/types/riesgo";
+
+interface Props {
+  onGuardarRiesgo?: (nuevoRiesgo: Riesgo) => void;
+}
 
 export interface RiesgoFormState {
   proceso: string;
@@ -12,6 +33,14 @@ export interface RiesgoFormState {
   evento: string;
   consecuencia: string;
   supuestos: string;
+  // Evaluación y medidas (Fase 4)
+  probabilidad: ProbabilidadValor;
+  justificacionProbabilidad: string;
+  impacto: ImpactoValor;
+  justificacionImpacto: string;
+  medida: string;
+  prioridad: PrioridadMedida;
+  comprobacionEficacia: string;
 }
 
 const ESTADO_INICIAL: RiesgoFormState = {
@@ -23,6 +52,13 @@ const ESTADO_INICIAL: RiesgoFormState = {
   evento: "",
   consecuencia: "",
   supuestos: "",
+  probabilidad: 2,
+  justificacionProbabilidad: "",
+  impacto: 2,
+  justificacionImpacto: "",
+  medida: "",
+  prioridad: "Alta",
+  comprobacionEficacia: "",
 };
 
 const EJEMPLO_ACADEMICO: RiesgoFormState = {
@@ -34,14 +70,33 @@ const EJEMPLO_ACADEMICO: RiesgoFormState = {
   evento: "pérdida de acceso a los registros confirmados",
   consecuencia: "imposibilidad de reconstruir parte de las matrículas",
   supuestos: "se desconoce si las copias disponibles permiten recuperar todos los registros",
+  probabilidad: 2,
+  justificacionProbabilidad:
+    "Campaña de 7 días de alta afluencia sobre una sola instancia de BD; no habiéndose probado copias, el incidente no es descartable.",
+  impacto: 3,
+  justificacionImpacto:
+    "Grave: la pérdida irreversible de registros confirmados impide tramitar las admisiones en plazo.",
+  medida:
+    "Protocolo de pruebas periódicas de restauración de copias de seguridad en contingencia con verificación de checksums.",
+  prioridad: "Alta",
+  comprobacionEficacia:
+    "Simular recuperación completa desde el último backup en entorno de prueba y constatar que el 100% de los datos son legibles.",
 };
 
-export default function FormularioRiesgo() {
+export default function FormularioRiesgo({ onGuardarRiesgo }: Props) {
   const [formData, setFormData] = useState<RiesgoFormState>(ESTADO_INICIAL);
   const [showConceptHelp, setShowConceptHelp] = useState(false);
+  const [feedbackMensaje, setFeedbackMensaje] = useState<string | null>(null);
 
-  const handleChange = (campo: keyof RiesgoFormState, valor: string) => {
-    // Tratar como texto plano, limitando longitudes para seguridad básica en navegador
+  const { puntuacion, nivel } = calcularNivelRiesgo(
+    formData.probabilidad,
+    formData.impacto
+  );
+
+  const handleChange = <K extends keyof RiesgoFormState>(
+    campo: K,
+    valor: RiesgoFormState[K]
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [campo]: valor,
@@ -50,10 +105,13 @@ export default function FormularioRiesgo() {
 
   const handleCargarEjemplo = () => {
     setFormData(EJEMPLO_ACADEMICO);
+    setFeedbackMensaje("Ejemplo del caso Academia Horizonte cargado.");
+    setTimeout(() => setFeedbackMensaje(null), 3000);
   };
 
   const handleLimpiar = () => {
     setFormData(ESTADO_INICIAL);
+    setFeedbackMensaje(null);
   };
 
   // Validación de campos obligatorios en cliente
@@ -68,10 +126,54 @@ export default function FormularioRiesgo() {
   ];
 
   const camposPendientes = camposObligatorios.filter(
-    (c) => !formData[c.key].trim()
+    (c) => !String(formData[c.key]).trim()
   );
 
   const formularioCompleto = camposPendientes.length === 0;
+
+  const evaluacionValida =
+    formData.justificacionProbabilidad.trim().length > 0 &&
+    formData.justificacionImpacto.trim().length > 0 &&
+    formData.medida.trim().length > 0 &&
+    formData.comprobacionEficacia.trim().length > 0;
+
+  const handleRegistrarRiesgo = () => {
+    if (!formularioCompleto) {
+      alert("Por favor completa todos los campos de formulación obligatorios.");
+      return;
+    }
+    if (!evaluacionValida) {
+      alert("Por favor completa las justificaciones de probabilidad e impacto, la medida y su método de comprobación.");
+      return;
+    }
+
+    if (onGuardarRiesgo) {
+      const nuevoRiesgo: Riesgo = {
+        id: `RSG-00${Math.floor(Math.random() * 900 + 100)}`,
+        proceso: formData.proceso.trim(),
+        activo: formData.activo.trim(),
+        objetivo: formData.objetivo.trim(),
+        condicion: formData.condicion.trim(),
+        amenaza: formData.amenaza.trim(),
+        evento: formData.evento.trim(),
+        consecuencia: formData.consecuencia.trim(),
+        supuestos: formData.supuestos.trim() || undefined,
+        probabilidad: formData.probabilidad,
+        justificacionProbabilidad: formData.justificacionProbabilidad.trim(),
+        impacto: formData.impacto,
+        justificacionImpacto: formData.justificacionImpacto.trim(),
+        puntuacion,
+        nivel,
+        medida: formData.medida.trim(),
+        prioridad: formData.prioridad,
+        comprobacionEficacia: formData.comprobacionEficacia.trim(),
+      };
+
+      onGuardarRiesgo(nuevoRiesgo);
+      setFeedbackMensaje(`¡Riesgo registrado con éxito con nivel ${nivel} (${puntuacion})!`);
+      setTimeout(() => setFeedbackMensaje(null), 4000);
+    }
+  };
 
   return (
     <section className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
@@ -80,10 +182,10 @@ export default function FormularioRiesgo() {
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-indigo-600" />
-            Identificar un riesgo
+            Identificar y Evaluar un Riesgo
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Formulación sintáctica guiada para construir un escenario de riesgo coherente.
+            Formulación sintáctica guiada, evaluación cuantitativa (1-3) y asignación de medidas de protección.
           </p>
         </div>
 
@@ -108,13 +210,20 @@ export default function FormularioRiesgo() {
         </div>
       </div>
 
+      {feedbackMensaje && (
+        <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs rounded-lg p-3 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{feedbackMensaje}</span>
+        </div>
+      )}
+
       {/* Aviso de borrador temporal */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 flex items-center justify-between">
         <span className="font-medium">
           ⚠️ Borrador temporal. No se guarda al recargar la página.
         </span>
         <span className="text-[11px] text-amber-700 hidden sm:inline">
-          Los datos se conservan únicamente en memoria durante la sesión activa.
+          Los datos permanecen únicamente en memoria en esta fase del ejercicio.
         </span>
       </div>
 
@@ -126,7 +235,9 @@ export default function FormularioRiesgo() {
           className="text-xs font-medium text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1 focus:outline-none"
         >
           <HelpCircle className="w-3.5 h-3.5" />
-          {showConceptHelp ? "Ocultar guía conceptual de formulación" : "Ver guía conceptual (Debilidad vs Amenaza vs Evento vs Consecuencia)"}
+          {showConceptHelp
+            ? "Ocultar guía conceptual de formulación"
+            : "Ver guía conceptual (Debilidad vs Amenaza vs Evento vs Consecuencia)"}
         </button>
 
         {showConceptHelp && (
@@ -316,6 +427,164 @@ export default function FormularioRiesgo() {
             </span>
           </div>
         </fieldset>
+
+        {/* BLOQUE E: EVALUACIÓN CUANTITATIVA Y JUSTIFICACIÓN (Fase 4) */}
+        <fieldset className="border border-indigo-200 rounded-lg p-4 bg-indigo-50/30 space-y-4">
+          <legend className="px-2 text-xs font-bold uppercase tracking-wider text-indigo-900 bg-indigo-100 border border-indigo-200 rounded flex items-center gap-1.5">
+            <Calculator className="w-3.5 h-3.5" />
+            Evaluación Cuantitativa y Justificación (1 a 3)
+          </legend>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Probabilidad */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="probabilidad" className="text-xs font-bold text-slate-800">
+                  Probabilidad (1 a 3) <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  id="probabilidad"
+                  value={formData.probabilidad}
+                  onChange={(e) =>
+                    handleChange("probabilidad", Number(e.target.value) as ProbabilidadValor)
+                  }
+                  className="px-2.5 py-1 text-xs border border-slate-300 rounded-md bg-white font-bold text-slate-900"
+                >
+                  <option value={1}>1 - Baja</option>
+                  <option value={2}>2 - Media</option>
+                  <option value={3}>3 - Alta</option>
+                </select>
+              </div>
+              <textarea
+                id="justificacionProbabilidad"
+                rows={2}
+                maxLength={300}
+                value={formData.justificacionProbabilidad}
+                onChange={(e) => handleChange("justificacionProbabilidad", e.target.value)}
+                placeholder="Justificación fundamentada obligatoria de la probabilidad..."
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+              <span className="text-[10px] text-slate-400 block">
+                Explicar por qué es baja, media o alta según las condiciones del caso (máx. 300 car.).
+              </span>
+            </div>
+
+            {/* Impacto */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="impacto" className="text-xs font-bold text-slate-800">
+                  Impacto (1 a 3) <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  id="impacto"
+                  value={formData.impacto}
+                  onChange={(e) =>
+                    handleChange("impacto", Number(e.target.value) as ImpactoValor)
+                  }
+                  className="px-2.5 py-1 text-xs border border-slate-300 rounded-md bg-white font-bold text-slate-900"
+                >
+                  <option value={1}>1 - Menor</option>
+                  <option value={2}>2 - Significativo</option>
+                  <option value={3}>3 - Grave</option>
+                </select>
+              </div>
+              <textarea
+                id="justificacionImpacto"
+                rows={2}
+                maxLength={300}
+                value={formData.justificacionImpacto}
+                onChange={(e) => handleChange("justificacionImpacto", e.target.value)}
+                placeholder="Justificación fundamentada obligatoria del impacto..."
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+              <span className="text-[10px] text-slate-400 block">
+                Explicar afectación al plazo de 7 días o pérdida de registros confirmados (máx. 300 car.).
+              </span>
+            </div>
+          </div>
+
+          {/* Resultado de la Puntuación */}
+          <div className="bg-white p-3 rounded-lg border border-indigo-200 flex items-center justify-between">
+            <span className="text-xs text-slate-700">
+              Cálculo: <strong>{formData.probabilidad}</strong> (Prob.) × <strong>{formData.impacto}</strong> (Imp.) ={" "}
+              <span className="font-extrabold text-slate-900 text-sm">{puntuacion} puntos</span>
+            </span>
+            <span
+              className={`text-xs font-bold px-3 py-1 rounded-md border ${
+                nivel === "Alto"
+                  ? "bg-rose-100 text-rose-800 border-rose-300"
+                  : nivel === "Medio"
+                  ? "bg-amber-100 text-amber-800 border-amber-300"
+                  : "bg-emerald-100 text-emerald-800 border-emerald-300"
+              }`}
+            >
+              Nivel de Riesgo: {nivel}
+            </span>
+          </div>
+        </fieldset>
+
+        {/* BLOQUE F: MEDIDA DE PROTECCIÓN Y COMPROBACIÓN DE EFICACIA (Fase 4) */}
+        <fieldset className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 space-y-3">
+          <legend className="px-2 text-xs font-bold uppercase tracking-wider text-slate-800 bg-slate-100 border border-slate-200 rounded flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Propuesta de Medida de Protección Concreta
+          </legend>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="sm:col-span-3">
+              <label htmlFor="medida" className="block text-xs font-semibold text-slate-700 mb-1">
+                Medida concreta recomendada <span className="text-rose-500">*</span>
+              </label>
+              <input
+                id="medida"
+                type="text"
+                maxLength={250}
+                value={formData.medida}
+                onChange={(e) => handleChange("medida", e.target.value)}
+                placeholder="Ej. Protocolo de pruebas periódicas de restauración con checksums..."
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="prioridad" className="block text-xs font-semibold text-slate-700 mb-1">
+                Prioridad <span className="text-rose-500">*</span>
+              </label>
+              <select
+                id="prioridad"
+                value={formData.prioridad}
+                onChange={(e) => handleChange("prioridad", e.target.value as PrioridadMedida)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-semibold"
+              >
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="comprobacionEficacia" className="block text-xs font-semibold text-slate-700 mb-1">
+              Forma de comprobar su eficacia técnica <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="comprobacionEficacia"
+              rows={2}
+              maxLength={300}
+              value={formData.comprobacionEficacia}
+              onChange={(e) => handleChange("comprobacionEficacia", e.target.value)}
+              placeholder="Ej. Simulación de recuperación en servidor de contingencia y verificación de hashes..."
+              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+            />
+            <span className="text-[10px] text-slate-400">
+              Método objetivo y comprobable que verifica que la medida protege el activo y objetivo (máx. 300 car.).
+            </span>
+          </div>
+
+          <div className="bg-amber-50 p-2.5 rounded text-[11px] text-amber-800 border border-amber-200 italic">
+            * Recordatorio: Una medida propuesta no reduce automáticamente el riesgo hasta ser implantada y verificada.
+          </div>
+        </fieldset>
       </form>
 
       {/* VISTA PREVIA SINTÁCTICA DEL RIESGO */}
@@ -374,7 +643,7 @@ export default function FormularioRiesgo() {
         </div>
 
         {/* Advertencia sobre campos pendientes */}
-        {!formularioCompleto ? (
+        {!formularioCompleto && (
           <div className="bg-amber-100/80 border border-amber-300 rounded-lg p-3 text-xs text-amber-900 space-y-1">
             <p className="font-semibold">Faltan campos por completar para cerrar la formulación:</p>
             <div className="flex flex-wrap gap-1.5 mt-1">
@@ -384,23 +653,21 @@ export default function FormularioRiesgo() {
                 </span>
               ))}
             </div>
-            <p className="text-[11px] text-amber-700 pt-1">
-              * Nota didáctica: La persona evaluadora debe revisar la coherencia lógica y la gramática del escenario antes de validarlo.
-            </p>
-          </div>
-        ) : (
-          <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <span>
-              Todos los campos obligatorios están cumplimentados. Revisa que el escenario describa una cadena causa-efecto plausible antes de proceder a la evaluación numérica de probabilidad e impacto.
-            </span>
           </div>
         )}
 
-        {/* Detalle de supuestos si existen */}
-        {formData.supuestos.trim() && (
-          <div className="text-xs text-slate-600 bg-white p-2.5 rounded border border-indigo-100">
-            <strong className="text-slate-800">Supuesto / Información pendiente registrada:</strong> {formData.supuestos.trim()}
+        {/* Botón para incorporar a la evaluación */}
+        {onGuardarRiesgo && (
+          <div className="pt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={handleRegistrarRiesgo}
+              disabled={!formularioCompleto || !evaluacionValida}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow transition-colors focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Incorporar riesgo a la evaluación
+            </button>
           </div>
         )}
       </div>

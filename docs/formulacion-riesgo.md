@@ -53,3 +53,4 @@ Para asegurar que los elementos formen un escenario coherente, la interfaz incor
 > Conforme al principio de defensa en profundidad (**ENS mp.sw.1** y **NIST SI-10**), el cliente web es un entorno no confiable. Por tanto:
 > * **NO se marca el requisito SEG-05 como cumplido.**
 > * El requisito **SEG-05** permanecerá en estado `Pendiente` hasta la **Fase 5**, donde se implementará la validación server-side estricta mediante esquemas Zod en los Route Handlers / Server Actions antes de cualquier mutación o persistencia en base de datos.
+

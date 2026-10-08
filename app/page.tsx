@@ -1,14 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, AlertTriangle, Database, Server, Info, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Shield,
+  AlertTriangle,
+  Server,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  LayoutDashboard,
+  Terminal,
+  PlusCircle,
+} from "lucide-react";
 import FormularioRiesgo from "@/components/FormularioRiesgo";
+import PanelDireccion from "@/components/PanelDireccion";
+import PanelTecnico from "@/components/PanelTecnico";
+import { Riesgo } from "@/types/riesgo";
+import { RIESGOS_INICIALES } from "@/data/riesgosIniciales";
+
+type TabVista = "direccion" | "tecnico" | "formulario";
 
 export default function Home() {
   const [showEvaluationRules, setShowEvaluationRules] = useState(false);
+  const [vistaActiva, setVistaActiva] = useState<TabVista>("direccion");
+  const [riesgos, setRiesgos] = useState<Riesgo[]>(RIESGOS_INICIALES);
+
+  const handleGuardarRiesgo = (nuevoRiesgo: Riesgo) => {
+    setRiesgos((prev) => [nuevoRiesgo, ...prev]);
+    setVistaActiva("tecnico");
+  };
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+    <main className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
       {/* Cabecera Principal */}
       <header className="mb-8 text-center sm:text-left">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200 mb-3">
@@ -171,10 +194,53 @@ export default function Home() {
           )}
         </section>
 
-        {/* Sección: Identificar un riesgo (Formulación Guiada) */}
-        <FormularioRiesgo />
+        {/* NAVEGACIÓN ENTRE VISTAS DE EVALUACIÓN */}
+        <div className="bg-slate-200/80 p-1.5 rounded-xl flex flex-wrap gap-1.5 text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => setVistaActiva("direccion")}
+            className={`flex-1 min-w-[140px] py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-all ${
+              vistaActiva === "direccion"
+                ? "bg-white text-indigo-900 shadow font-bold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4 text-indigo-600" />
+            Vista Dirección (Ejecutiva)
+          </button>
+          <button
+            type="button"
+            onClick={() => setVistaActiva("tecnico")}
+            className={`flex-1 min-w-[140px] py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-all ${
+              vistaActiva === "tecnico"
+                ? "bg-white text-indigo-900 shadow font-bold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            }`}
+          >
+            <Terminal className="w-4 h-4 text-indigo-600" />
+            Vista Técnica & Matriz
+          </button>
+          <button
+            type="button"
+            onClick={() => setVistaActiva("formulario")}
+            className={`flex-1 min-w-[140px] py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-all ${
+              vistaActiva === "formulario"
+                ? "bg-white text-indigo-900 shadow font-bold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            }`}
+          >
+            <PlusCircle className="w-4 h-4 text-indigo-600" />
+            Identificar / Evaluar Riesgo
+          </button>
+        </div>
+
+        {/* CONTENIDO SEGÚN LA VISTA SELECCIONADA */}
+        {vistaActiva === "direccion" && <PanelDireccion riesgos={riesgos} />}
+        {vistaActiva === "tecnico" && <PanelTecnico riesgos={riesgos} />}
+        {vistaActiva === "formulario" && (
+          <FormularioRiesgo onGuardarRiesgo={handleGuardarRiesgo} />
+        )}
       </div>
     </main>
   );
 }
-

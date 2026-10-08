@@ -127,6 +127,49 @@ Se realizaron comprobaciones locales en el entorno de desarrollo (Windows PowerS
 
 ---
 
-## Fase 4: Evaluación, Matriz y Medidas de Protección (Pendiente)
-* Próxima fase: Selectores numéricos de Probabilidad (1-3) e Impacto (1-3) con justificación obligatoria, cálculo automático de nivel ($P \times I$), formulario de medidas concretas de protección, prioridad y método de comprobación de eficacia, doble vista (Dirección vs Técnica) y registro de los dos riesgos completos de la Academia Horizonte.
+## Fase 4: Evaluación, Matriz y Medidas de Protección
+* **Fecha de ejecución:** 8 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Modelo de Datos y Tipado Estricto (`types/riesgo.ts`)
+* Diseñadas las estructuras TypeScript para los riesgos:
+  * Probabilidad: 1 (Baja), 2 (Media), 3 (Alta) con justificación obligatoria.
+  * Impacto: 1 (Menor), 2 (Significativo), 3 (Grave) con justificación obligatoria.
+  * Puntuación matemática ($P \times I$, rango 1 a 9).
+  * Niveles categóricos didácticos: Bajo (1 a 2), Medio (3 a 4) y Alto (6 a 9).
+  * Medida técnica, prioridad (Alta, Media, Baja) y comprobación objetiva de eficacia.
+
+### 2. Registro de los Dos Riesgos del Caso Academia Horizonte (`data/riesgosIniciales.ts`)
+* **RSG-001 (Fallo de almacenamiento y copias no probadas):**
+  * Evaluación: $P=2 \times I=3 = 6$ (**Alto**).
+  * Medida: Protocolo periódico de restauración en entorno aislado con sumas de comprobación SHA-256 (ENS `mp.info.2`, NIST `CP-4`/`CP-9`).
+  * Comprobación de eficacia: Simulación de contingencia recuperando el 100% de datos en un RTO menor a 2 horas.
+* **RSG-002 (Permisos administrativos excesivos en BD):**
+  * Evaluación: $P=2 \times I=3 = 6$ (**Alto**).
+  * Medida: Principio de mínimo privilegio (**SEG-04** / NIST `AC-6` / ENS `op.acc.4`), configurando credenciales con permisos exclusivos DML (`SELECT`, `INSERT`, `UPDATE`) y revocando DDL.
+  * Comprobación de eficacia: Test de intrusión donde sentencias `DROP TABLE` son denegadas con `permission denied`.
+
+### 3. Componentes Visuales y Doble Perspectiva
+* **Matriz de Riesgo 3 × 3 (`components/MatrizRiesgos.tsx`):** Muestra gráficamente las 9 celdas coloreadas según severidad (Verde, Amarillo, Rojo) con la posición de los riesgos.
+* **Panel de Dirección (`components/PanelDireccion.tsx`):**
+  * KPIs ejecutivos comprensibles para la alta dirección.
+  * Tabla ejecutiva que explica qué puede ocurrir, qué objetivo se afecta y qué medida se prioriza.
+  * **Respuesta a la Pregunta de Cierre:** Recomendación prioritaria de la **Medida 1 (Restauración de copias)** como seguro de supervivencia del negocio frente a cualquier contingencia física o lógica, y procedimiento de verificación para el objetivo de conservar registros.
+* **Panel Técnico (`components/PanelTecnico.tsx`):** Desglose exhaustivo para especialistas, matrices de control y procedimientos de prueba.
+* **Formulario extendido (`components/FormularioRiesgo.tsx`):** Permite evaluar cualquier nuevo escenario en tiempo real con cálculo reactivo de nivel y medida asociada.
+* **Navegación por pestañas en `app/page.tsx`:** Permite alternar fluidamente entre la vista de Dirección, la vista Técnica y el formulario.
+
+### 4. Documentación y Verificaciones
+* Creado **`docs/medidas-proteccion.md`** con el análisis completo y la justificación directiva.
+* Actualizado **`README.md`**.
+* Verificación de compilación: `npm run build` ejecutado con éxito.
+
+### 5. Commit de la Fase
+* **Mensaje:** `Implementa evaluacion de riesgos y medidas de proteccion`
+
+---
+
+## Fase 5: Persistencia, Servidor y Validaciones SEG (Pendiente)
+* Próxima fase: Persistencia de registros para conservarlos tras recargar la página (usando Vercel KV con token de solo lectura para SEG-04), Route Handlers seguros (`/api/riesgos`), validación estricta en servidor con esquemas Zod (cumplimiento formal de **SEG-05**), control de autorización para mutaciones (**SEG-03**), errores públicos sanitizados sin filtrado de trazas (**SEG-07**) y ausencia de secretos en el cliente (**SEG-02**).
 
