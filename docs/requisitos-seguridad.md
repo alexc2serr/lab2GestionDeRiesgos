@@ -117,3 +117,4 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
 * **Prueba de aceptación:** Verificación del flujo completo: push de commit -> ejecución exitosa de pipeline en GitHub Actions -> generación de despliegue Preview con commit hash trazable.
 * **Evidencia esperada:** Badge / log verde de GitHub Actions y entrada registrada en `docs/despliegue.md` con URL, fecha y hash de commit.
 * **Estado inicial:** `Pendiente`.
+

@@ -30,6 +30,8 @@ El sistema permite:
 
 * **[Fuentes Oficiales y Normativa](file:///docs/fuentes.md):** Enlaces oficiales del ENS (Real Decreto 311/2022) y NIST SP 800-53 Rev. 5, con condiciones de reutilización y declaración de alcance didáctico.
 * **[Requisitos de Seguridad Técnicos](file:///docs/requisitos-seguridad.md):** Especificación completa de los requisitos **SEG-01** a **SEG-08**, sus pruebas de aceptación y evidencias esperadas.
+* **[Caso de Estudio (Academia Horizonte)](file:///docs/caso.md):** Descripción del caso ficticio, proceso de matriculación, activos y condiciones conocidas.
+* **[Metodología de Evaluación de Riesgos](file:///docs/evaluacion-riesgos.md):** Escalas didácticas de probabilidad e impacto (1 a 3), umbrales de puntuación y reglas metodológicas.
 * **[Registro de Fases y Evidencias](file:///docs/registro-fases.md):** Bitácora cronológica con el detalle de tareas completadas, decisiones y commits de cada etapa del laboratorio.
 
 ---

@@ -42,3 +42,4 @@ Este documento recopila las normas y estándares oficiales de seguridad de la in
 ## 4. Declaración de Alcance Didáctico
 
 > **Aviso de cumplimiento:** La selección de medidas y controles del ENS y del NIST SP 800-53 Rev. 5 contenida en este proyecto constituye una **adaptación didáctica y orientativa** para el desarrollo del ejercicio académico. Su adopción no acredita conformidad completa ni certificación formal con ninguno de los dos marcos normativos.
+

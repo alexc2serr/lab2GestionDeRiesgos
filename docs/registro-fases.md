@@ -50,5 +50,43 @@ Se realizaron comprobaciones locales en el entorno de desarrollo (Windows PowerS
 
 ---
 
-## Fase 2: Estructura Base Next.js + TypeScript y Contexto del Caso (Pendiente)
-* Próxima fase: Creación de la aplicación mínima, configuración de TypeScript/Tailwind, creación de `docs/caso.md` y `docs/evaluacion-riesgos.md`, e interfaz inicial de contexto.
+## Fase 2: Estructura Base Next.js + TypeScript y Contexto del Caso
+* **Fecha de ejecución:** 8 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Construcción de la Aplicación Base
+* **Tecnología:** Next.js v15 (App Router) + TypeScript + Tailwind CSS configurado con tipado estricto.
+* **Diseño accesible:** Creada la página principal (`app/page.tsx`) en español, sin IA integrada, cumpliendo los tres textos obligatorios:
+  * Título: «Laboratorio de gestión de riesgos».
+  * Descripción: «Identificar, evaluar y comunicar riesgos para priorizar medidas de protección».
+  * Aviso visible: «Caso académico con datos ficticios».
+* **Componentes de contexto implementados:**
+  * Sección «Organización y objetivo» (Academia Horizonte, campaña de 7 días, activos clave).
+  * Sección «Condiciones del caso» (instancia única sin pruebas de restauración y permisos administrativos excesivos).
+  * Sección interactiva desplegable «Cómo evaluaremos los riesgos» detallando las escalas de Probabilidad (1-3) e Impacto (1-3), matriz didáctica y advertencias metodológicas.
+  * Aclaración visible de que las condiciones son estrictamente ficticias.
+
+### 2. Documentación del Caso y Metodología
+* **`docs/caso.md`:** Creado con la especificación completa del caso de la Academia Horizonte, objetivos de plazo e integridad, los tres activos principales y las condiciones operativas iniciales.
+* **`docs/evaluacion-riesgos.md`:** Creado con los descriptores de Probabilidad (1 Baja, 2 Media, 3 Alta) e Impacto (1 Menor, 2 Significativo, 3 Grave), fórmula $P \times I$, rangos didácticos (Bajo 1-2, Medio 3-4, Alto 6-9) y reglas de justificación obligatoria.
+* **Actualización de `README.md`:** Enlazados ambos documentos.
+
+### 3. Decisión Técnica de Persistencia
+* **Proveedor seleccionado:** **Vercel KV (Redis)**.
+* **Alineación con SEG-04 (Mínimo Privilegio):** Se documentaron en `.env.example` las variables requeridas por Vercel KV, contemplando el uso del token de solo lectura (`KV_REST_API_READ_ONLY_TOKEN`) para operaciones no privilegiadas y el token de escritura restringido a mutaciones de servidor.
+
+### 4. Pruebas y Verificaciones
+* **Compilación de producción:** Se ejecutó `npm run build` con resultado exitoso:
+  * TypeScript typecheck sin errores.
+  * Generación estática de páginas verificada (100% de rutas compiladas).
+  * `outputFileTracingRoot` configurado para eliminar advertencias en entorno Windows.
+
+### 5. Commit de la Fase
+* **Mensaje:** `Define caso y reglas de evaluación`
+
+---
+
+## Fase 3: Formulación Guiada del Riesgo (Frontend) (Pendiente)
+* Próxima fase: Construcción del formulario interactivo de 4 bloques (A, B, C, D), ayuda conceptual didáctica, vista previa de la frase en tiempo real con detección de campos incompletos, botón «Cargar ejemplo», botón «Limpiar formulario» con borrador temporal en memoria y documentación en `docs/formulacion-riesgo.md`.
+
