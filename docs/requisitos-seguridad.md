@@ -76,8 +76,8 @@ Estos requisitos definen el objetivo de seguridad de la práctica. Las referenci
 
 ## Decisiones pendientes
 
-- Definir el modelo de datos y la base de datos, si se incorpora en una fase posterior.
-- Elegir el mecanismo de autenticación y los roles de usuario.
+- Configurar la integración de Upstash Redis en Vercel y crear la separación de datos por entorno.
+- Elegir e implementar el mecanismo de autenticación; el catálogo inicial de roles ya está definido.
 - Determinar los recursos y variables separados para desarrollo, Preview y producción.
 - Seleccionar las pruebas automatizadas y el procedimiento de revisión de secretos.
 - Establecer el formato definitivo de evidencias y trazabilidad de los despliegues.

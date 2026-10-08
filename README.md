@@ -60,3 +60,8 @@ El repositorio debe crearse previamente como privado en GitHub. Git solicitará 
 
 - [Fuentes oficiales consultadas](./docs/fuentes.md)
 - [Requisitos académicos de seguridad](./docs/requisitos-seguridad.md)
+- [Decisiones iniciales de arquitectura](./docs/decisiones-arquitectura.md)
+
+## Persistencia y roles
+
+La persistencia prevista usa Redis mediante Upstash en Vercel Marketplace. Las credenciales se configuran por entorno y permanecen fuera del código y del historial de Git. El catálogo inicial de roles es `admin`, `analista` y `direccion`; la autorización deberá validarse en el servidor.
