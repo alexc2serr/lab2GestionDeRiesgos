@@ -9,7 +9,7 @@ Este documento registra las evidencias formales de publicación del proyecto en 
 * **Proyecto en Vercel:** `laboratorio2-riesgos`
 * **Entorno de despliegue:** **Preview** (despliegue de preproducción oficial del laboratorio).
 * **Rama Git de origen:** `gemini`
-* **Commit SHA asociado:** `cc8cb57` (y commits previos de la rama)
+* **Commit SHA asociado:** `fa36e09` (commit de consolidación final)
 * **Fecha y hora del despliegue:** 8 de octubre de 2026.
 * **URL de Previsualización Operativa (Preview URL):**  
   👉 **`https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app`**
@@ -44,7 +44,7 @@ Se comprobó que la versión desplegada en la URL Preview renderiza de forma vis
 * **URL Operativa de Vercel:** `https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app`
 * **Repositorio de GitHub:** `https://github.com/alexc2serr/lab2GestionDeRiesgos.git`
 * **Rama de entrega:** `gemini`
-* **Identificador de commit:** `cc8cb57`
+* **Identificador de commit:** `fa36e09`
 * **Riesgos completos registrados:** 
   * `RSG-001` (Fallo de almacenamiento y copias no probadas, nivel Alto 6).
   * `RSG-002` (Permisos administrativos excesivos en base de datos, nivel Alto 6).

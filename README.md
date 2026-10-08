@@ -96,3 +96,31 @@ El workflow [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) autom
 2. Verificación estricta de tipos TypeScript (**SEG-05**).
 3. Ejecución de pruebas de aceptación de seguridad (`npm test`) (**SEG-03**, **SEG-05**).
 4. Verificación de compilación de producción (**SEG-08**).
+
+---
+
+## 🌐 Despliegue en Vercel (Preview) y Verificación de la Entrega
+
+* **URL de Previsualización Oficial (Preview):**  
+  👉 **[https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app](https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app)**
+* **Endpoint API de Persistencia:**  
+  👉 [https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app/api/riesgos](https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app/api/riesgos)
+* **Rama de Entrega:** **`gemini`**
+* **Commit SHA de Entrega:** **`fa36e09`**
+
+### Forma de Comprobar la Entrega por el Profesorado:
+1. **Comprobación de la Interfaz Web:** Acceder a la URL Preview. Comprobar que en la cabecera figuran los tres textos obligatorios del caso (Título, Descripción y Aviso de datos ficticios) y las secciones informativas de la Academia Horizonte.
+2. **Comprobación de la Doble Perspectiva:** Alternar entre la pestaña **Panel de Dirección** (resumen ejecutivo, KPIs, respuesta a la pregunta de cierre) y la pestaña **Panel Técnico** (matriz 3x3, controles ENS/NIST, comandos y planes de pruebas técnicas).
+3. **Comprobación de Persistencia y Clasificación:** Comprobar que se cargan los dos riesgos completos (`RSG-001` y `RSG-002`) clasificados como nivel Alto (6) en la matriz 3x3 interactiva.
+4. **Comprobación de Seguridad Server-Side:** Intentar crear un riesgo sin identificarse: el sistema opera en modo *Solo Lectura* y deniega mutaciones con HTTP 401 (**SEG-03**). Pulsar sobre *Solo Lectura* para introducir la credencial administrativa (`ADMIN_API_KEY`) custodiada en Bitwarden (valor de prueba didáctico en plantilla: `laboratorio2026`).
+5. **Comprobación de Pruebas Automatizadas:** Ejecutar en local o en CI `npm test` para verificar el paso de las 9 pruebas de aceptación (validación Zod, sanitización XSS, autorización y no divulgación de secretos).
+
+---
+
+## 🧠 Decisiones Revisadas y Corregidas de la IA (Criterio de Evaluación)
+
+En cumplimiento de las normas de realización del laboratorio, se documentan las siguientes decisiones clave donde el criterio humano del alumno revisó y corrigió las propuestas del asistente de IA:
+
+1. **Corrección de Custodia de Credenciales (Zero-Knowledge):** Ante la posibilidad de que la IA automatizase la creación o lectura de archivos con secretos reales o ejecutase comandos directos de Vercel con tokens en memoria, el alumno exigió de forma estricta el aislamiento: *"antes de seguir estamos utilizando bitwarden para las credenciales no? y no tienes nada de acceso a credenciales no?"*. La IA fue corregida para adoptar un rol de asesoramiento guiado paso a paso, dejando la custodia de secretos en Bitwarden y la inyección en el dashboard web de Vercel exclusivamente en manos del alumno.
+2. **Delimitación Normativa de las Escalas Didácticas:** La IA tendía a asociar la fórmula de puntuación $\text{Probabilidad} \times \text{Impacto}$ ($1\text{ a }3$) directamente como una metodología oficial del ENS o NIST. Se corrigió explícitamente para documentar que dicha matriz 3x3 y sus umbrales (1-2 Bajo, 3-4 Medio, 6-9 Alto) son **reglas didácticas propias del laboratorio** y no una fórmula atribuible al ENS ni a NIST SP 800-53 Rev. 5, preservando la honestidad metodológica requerida por el profesor.
+3. **Segregación de Entornos en Git y Vercel:** Se corrigió la sugerencia inicial de fusionar los avances a la rama `main`, manteniendo todo el ciclo de iteraciones, pruebas y despliegues Preview en la rama de trabajo aislada **`gemini`**, garantizando un historial transparente y auditable para la evaluación.

@@ -289,3 +289,10 @@ Se realizaron comprobaciones locales en el entorno de desarrollo (Windows PowerS
 * Completados y actualizados todos los entregables en la carpeta `docs/`.
 * Todo el trabajo ha sido preservado y versionado exclusivamente en la rama de entrega `gemini`.
 
+### 6. Decisiones Revisadas y Corregidas de la IA (Criterio de Evaluación Académica)
+En estricto cumplimiento de las normas de realización (*"Conservad una decisión de la IA que hayáis revisado o corregido"*):
+1. **Soberanía y Zero-Knowledge de Secretos:** La IA fue explícitamente instruida y corregida para no procesar, solicitar ni automatizar credenciales reales. El usuario custodió todo en Bitwarden e inyectó las variables de forma privada en el entorno web de Vercel.
+2. **Desvinculación Didáctica de la Fórmula de Riesgo:** Se revisó la formulación de la matriz para evitar atribuir la escala didáctica 3x3 ($\text{Probabilidad} \times \text{Impacto} \in [1, 9]$) directamente a NIST o ENS, clarificando que constituye una regla pedagógica específica del laboratorio.
+3. **Mantenimiento del Flujo en la Rama `gemini`:** Se mantuvo todo el ciclo de desarrollo, CI/CD y despliegue Preview en la rama `gemini` para garantizar la trazabilidad exigida por el laboratorio.
+
+
