@@ -1,0 +1,42 @@
+# Dependencias
+/node_modules
+/.pnp
+.pnp.js
+
+# Salidas de compilación
+/.next/
+/out/
+/build
+/dist
+
+# Variables de entorno y secretos (SEG-01 / SEG-02)
+# Solo se permite .env.example en el repositorio
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# Configuración y despliegues locales de Vercel
+.vercel
+
+# Logs y depuración
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Archivos de sistema operativo e IDEs
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
