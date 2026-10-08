@@ -61,6 +61,7 @@ El repositorio debe crearse previamente como privado en GitHub. Git solicitará 
 - [Fuentes oficiales consultadas](./docs/fuentes.md)
 - [Requisitos académicos de seguridad](./docs/requisitos-seguridad.md)
 - [Decisiones iniciales de arquitectura](./docs/decisiones-arquitectura.md)
+- [Registro del despliegue Preview](./docs/despliegue.md)
 
 ## Persistencia y roles
 
