@@ -87,6 +87,46 @@ Se realizaron comprobaciones locales en el entorno de desarrollo (Windows PowerS
 
 ---
 
-## Fase 3: Formulación Guiada del Riesgo (Frontend) (Pendiente)
-* Próxima fase: Construcción del formulario interactivo de 4 bloques (A, B, C, D), ayuda conceptual didáctica, vista previa de la frase en tiempo real con detección de campos incompletos, botón «Cargar ejemplo», botón «Limpiar formulario» con borrador temporal en memoria y documentación en `docs/formulacion-riesgo.md`.
+## Fase 3: Formulación Guiada del Riesgo (Frontend)
+* **Fecha de ejecución:** 8 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Componente de Formulación Guiada (`components/FormularioRiesgo.tsx`)
+* **Estructura en 4 Bloques:**
+  * **Bloque A (Qué protegemos):** Proceso (máx. 80 car.), Activo afectado (`plataforma web`, `base de datos`, `copias de seguridad`), Objetivo afectado (`completar solicitudes en plazo`, `conservar y recuperar registros`).
+  * **Bloque B (Qué podría ocurrir):** Condición/debilidad conocida (máx. 200 car.), Amenaza causante (máx. 150 car.), Evento concreto (máx. 200 car.).
+  * **Bloque C (Qué consecuencias tendría):** Consecuencia para la organización (máx. 250 car.).
+  * **Bloque D (Qué estamos suponiendo):** Supuestos e información pendiente opcional (máx. 300 car.).
+* **Guía conceptual didáctica:** Cuadro explicativo desplegable que diferencia claramente:
+  * *Debilidad:* Facilita que ocurra el daño.
+  * *Amenaza:* Puede provocar el daño.
+  * *Evento:* Lo que sucede concretamente.
+  * *Consecuencia:* El impacto real sobre los objetivos.
+* **Vista previa sintáctica interactiva:** Construye en tiempo real la frase unificada:
+  > *«Debido a [condición], [amenaza] podría provocar [evento] sobre [activo], causando [consecuencia] y afectando al objetivo de [objetivo], en el proceso de [proceso]»*.
+* **Detección de incompletitud:** Si falta algún campo obligatorio, la vista previa no asume que el escenario está completo: resalta los marcadores vacíos, lista los campos pendientes y advierte a la persona evaluadora sobre la necesidad de verificar la coherencia gramatical y causal.
+* **Utilidades de interacción:**
+  * Botón **«Cargar ejemplo»**: Precarga el escenario oficial del caso (fallo de almacenamiento y copias no probadas).
+  * Botón **«Limpiar formulario»**: Resetea el estado a vacío.
+  * Aviso visible: *«Borrador temporal. No se guarda al recargar»* (persistencia estrictamente en memoria).
+
+### 2. Documentación y Requisitos de Seguridad
+* **`docs/formulacion-riesgo.md`:** Creado con la especificación de campos, controles, límites de longitud y reglas didácticas.
+* **Control SEG-05:** Se documenta expresamente que las validaciones en el navegador son provisionales; **no se marca SEG-05 como cumplido** hasta la validación de servidor (Fase 5).
+* **Actualización de `README.md`:** Enlace incorporado.
+
+### 3. Pruebas y Verificaciones
+* Verificada la carga del ejemplo didáctico en memoria.
+* Verificada la detección de campos incompletos y la reactividad de la vista previa sintáctica.
+* Verificado el reseteo con el botón «Limpiar formulario».
+* Ejecución de `npm run build` para garantizar cero errores de TypeScript y compilación.
+
+### 4. Commit de la Fase
+* **Mensaje:** `Añade formulación guiada del riesgo`
+
+---
+
+## Fase 4: Evaluación, Matriz y Medidas de Protección (Pendiente)
+* Próxima fase: Selectores numéricos de Probabilidad (1-3) e Impacto (1-3) con justificación obligatoria, cálculo automático de nivel ($P \times I$), formulario de medidas concretas de protección, prioridad y método de comprobación de eficacia, doble vista (Dirección vs Técnica) y registro de los dos riesgos completos de la Academia Horizonte.
 

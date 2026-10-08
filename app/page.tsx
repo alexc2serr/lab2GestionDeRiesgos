@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Shield, AlertTriangle, Database, Server, Info, ChevronDown, ChevronUp } from "lucide-react";
+import FormularioRiesgo from "@/components/FormularioRiesgo";
 
 export default function Home() {
   const [showEvaluationRules, setShowEvaluationRules] = useState(false);
@@ -169,6 +170,9 @@ export default function Home() {
             </div>
           )}
         </section>
+
+        {/* Sección: Identificar un riesgo (Formulación Guiada) */}
+        <FormularioRiesgo />
       </div>
     </main>
   );
