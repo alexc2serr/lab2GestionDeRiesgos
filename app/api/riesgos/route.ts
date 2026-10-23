@@ -2,11 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { RiesgoSchema, RiesgoModificacionSchema } from "@/lib/validaciones";
 import { obtenerRiesgos, guardarRiesgoPersistente, actualizarRiesgo } from "@/lib/storage";
 import { calcularNivelRiesgo, Riesgo } from "@/types/riesgo";
+import { verificarTokenSesion } from "@/lib/auth";
 
 /**
  * Función auxiliar para comprobar autorización (SEG-03 / ENS op.acc.4 / NIST AC-6)
+ * Valida la cookie HttpOnly firmada del perfil gestor o el token Bearer en cabecera
  */
 function comprobarAutorizacion(req: NextRequest): boolean {
+  // 1. Verificar cookie de sesión firmada 'session_gestor' (Prompt 9)
+  const cookieSesion = req.cookies.get("session_gestor")?.value;
+  if (cookieSesion) {
+    const payload = verificarTokenSesion(cookieSesion);
+    if (payload && payload.usuario === "gestor") {
+      return true;
+    }
+  }
+
+  // 2. Verificar cabecera Authorization (para integraciones directas o scripts de test)
   const authHeader = req.headers.get("authorization") || req.headers.get("x-admin-key");
   const adminKeyEsperada = process.env.ADMIN_API_KEY || "laboratorio2026";
 
@@ -14,22 +26,27 @@ function comprobarAutorizacion(req: NextRequest): boolean {
     ? authHeader.substring(7).trim()
     : authHeader?.trim();
 
-  // Comprobar también cookie de sesión gestor si existiese (Fase 10)
-  const cookieSesion = req.cookies.get("session_gestor")?.value;
-  if (cookieSesion) {
-    return true; // La cookie de sesión válida autoriza la acción
-  }
-
   return !!tokenRecibido && tokenRecibido === adminKeyEsperada;
 }
 
 /**
  * Endpoint GET /api/riesgos
  * Recupera la lista de riesgos registrados (Persistencia en PostgreSQL / Neon)
+ * Prompt 9: Sin sesión válida no se pueden ver los registros (401).
  * SEG-02: Ningún secreto de servidor ni cadena de conexión se envía al navegador.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    if (!comprobarAutorizacion(req)) {
+      return NextResponse.json(
+        {
+          error:
+            "No autorizado. Se requiere iniciar sesión con el perfil «gestor» para consultar los riesgos (Prompt 9 / Requisito SEG-03).",
+        },
+        { status: 401 }
+      );
+    }
+
     const riesgos = await obtenerRiesgos();
     return NextResponse.json(riesgos, { status: 200 });
   } catch (error) {

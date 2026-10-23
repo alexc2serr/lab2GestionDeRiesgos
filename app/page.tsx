@@ -31,11 +31,13 @@ export default function Home() {
   const [riesgos, setRiesgos] = useState<Riesgo[]>(RIESGOS_INICIALES);
   const [cargandoRiesgos, setCargandoRiesgos] = useState(true);
 
-  // Estado de Autorización (SEG-03)
+  // Estado de Autorización y Sesión del Gestor (Prompt 9 / SEG-03)
   const [adminToken, setAdminToken] = useState<string>("");
   const [estaAutorizado, setEstaAutorizado] = useState(false);
+  const [usuarioGestor, setUsuarioGestor] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [inputToken, setInputToken] = useState("");
+  const [inputUsuario, setInputUsuario] = useState("gestor");
+  const [inputPassword, setInputPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSuccessMsg, setAuthSuccessMsg] = useState<string | null>(null);
 
@@ -43,65 +45,108 @@ export default function Home() {
   const cargarRiesgosDesdeServidor = async () => {
     setCargandoRiesgos(true);
     try {
-      const res = await fetch("/api/riesgos");
+      const headers: Record<string, string> = {};
+      if (adminToken) {
+        headers["Authorization"] = `Bearer ${adminToken}`;
+      }
+
+      const res = await fetch("/api/riesgos", { headers });
       if (res.ok) {
         const data: Riesgo[] = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setRiesgos(data);
         }
+      } else if (res.status === 401) {
+        // Sin sesión no se pueden ver registros (Prompt 9, item 2)
+        setRiesgos([]);
       }
     } catch (err) {
-      console.warn("No se pudo conectar a /api/riesgos, usando datos locales:", err);
+      console.warn("No se pudo conectar a /api/riesgos:", err);
     } finally {
       setCargandoRiesgos(false);
     }
   };
 
-  useEffect(() => {
-    cargarRiesgosDesdeServidor();
-    // Recuperar token de sesión en memoria si existiera
+  // 2. Comprobar sesión al cargar la página
+  const comprobarSesionAlCargar = async () => {
+    try {
+      const res = await fetch("/api/auth/sesion");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.autenticado) {
+          setEstaAutorizado(true);
+          setUsuarioGestor(data.usuario);
+          await cargarRiesgosDesdeServidor();
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Error comprobando sesión HttpOnly:", err);
+    }
+
+    // Si había token en sessionStorage para compatibilidad directa
     const tokenGuardado = sessionStorage.getItem("admin_token");
     if (tokenGuardado) {
       setAdminToken(tokenGuardado);
       setEstaAutorizado(true);
-    }
-  }, []);
-
-  // 2. Verificar autorización (SEG-03)
-  const handleVerificarAuth = async () => {
-    setAuthError(null);
-    try {
-      const res = await fetch("/api/auth/verificar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminKey: inputToken.trim() }),
-      });
-      const data = await res.json();
-
-      if (data.valido) {
-        setAdminToken(inputToken.trim());
-        setEstaAutorizado(true);
-        sessionStorage.setItem("admin_token", inputToken.trim());
-        setAuthSuccessMsg("Autorización concedida con éxito (SEG-03).");
-        setTimeout(() => {
-          setShowAuthModal(false);
-          setAuthSuccessMsg(null);
-        }, 1500);
-      } else {
-        setAuthError(
-          "Clave inválida. Comprueba la credencial custodiada en Bitwarden (valor por defecto en plantilla: 'laboratorio2026')."
-        );
-      }
-    } catch {
-      setAuthError("Error de comunicación con el servicio de verificación.");
+      await cargarRiesgosDesdeServidor();
+    } else {
+      setCargandoRiesgos(false);
     }
   };
 
-  const handleCerrarSesion = () => {
+  useEffect(() => {
+    comprobarSesionAlCargar();
+  }, []);
+
+  // 3. Inicio de Sesión perfil «gestor» con contraseña hasheada y cookie HttpOnly (Prompt 9)
+  const handleLoginGestor = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setAuthError(null);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuario: inputUsuario.trim(),
+          contrasena: inputPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setEstaAutorizado(true);
+        setUsuarioGestor(data.usuario);
+        setAuthSuccessMsg("¡Sesión iniciada con éxito! Cookie HttpOnly firmada en el navegador.");
+        setInputPassword("");
+        await cargarRiesgosDesdeServidor();
+        setTimeout(() => {
+          setShowAuthModal(false);
+          setAuthSuccessMsg(null);
+        }, 1200);
+      } else {
+        setAuthError(data.error || "Credenciales incorrectas.");
+      }
+    } catch {
+      setAuthError("Error de comunicación con el servicio de autenticación.");
+    }
+  };
+
+  // 4. Cierre de sesión seguro (limpieza de cookie HttpOnly)
+  const handleCerrarSesion = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Ignore
+    }
     setAdminToken("");
     setEstaAutorizado(false);
+    setUsuarioGestor(null);
     sessionStorage.removeItem("admin_token");
-    setInputToken("");
+    setInputPassword("");
+    setRiesgos([]);
   };
 
   // 3. Guardar riesgo en el servidor con validación (SEG-05) y autorización (SEG-03)
@@ -158,7 +203,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Control de Seguridad y Autorización (SEG-03) */}
+          {/* Control de Seguridad y Autorización (Prompt 9 / SEG-03) */}
           <div className="flex flex-col items-start sm:items-end gap-1.5">
             <div className="flex items-center gap-2">
               <button
@@ -173,12 +218,12 @@ export default function Home() {
                 {estaAutorizado ? (
                   <>
                     <Unlock className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Admin Autorizado (SEG-03)</span>
+                    <span>Sesión Gestor Activa (SEG-03)</span>
                   </>
                 ) : (
                   <>
                     <Lock className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Solo Lectura (SEG-03)</span>
+                    <span>Iniciar Sesión Gestor (SEG-03)</span>
                   </>
                 )}
               </button>
@@ -187,20 +232,20 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleCerrarSesion}
-                  className="text-[11px] text-rose-600 hover:underline"
+                  className="text-[11px] text-rose-600 hover:underline font-semibold"
                 >
-                  Salir
+                  Cerrar Sesión
                 </button>
               )}
             </div>
             <span className="text-[10px] text-slate-500 font-mono">
-              Persistencia: {cargandoRiesgos ? "Sincronizando..." : "Vercel KV / Activa"}
+              Persistencia: PostgreSQL (Neon) / Activa
             </span>
           </div>
         </div>
       </header>
 
-      {/* Modal de Autorización Administrativa (SEG-03) */}
+      {/* Modal de Acceso del Gestor y Sesión Segura (Prompt 9) */}
       {showAuthModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
@@ -208,7 +253,7 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <KeyRound className="w-5 h-5 text-indigo-600" />
                 <h3 className="text-base font-bold text-slate-900">
-                  Autorización de Servidor (SEG-03)
+                  Acceso del Gestor (Prompt 9 / SEG-03)
                 </h3>
               </div>
               <button
@@ -221,53 +266,71 @@ export default function Home() {
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              Conforme al <strong>ENS (op.acc.4)</strong> y <strong>NIST SP 800-53 (AC-6)</strong>, las operaciones de escritura están protegidas en el backend. Introduce la credencial administrativa custodiada en Bitwarden (valor de prueba en plantilla: <code className="bg-slate-100 px-1 py-0.5 rounded text-indigo-900 font-bold">laboratorio2026</code>).
+              Autenticación para el perfil único <strong>«gestor»</strong>. La sesión se custodia en una cookie <strong>HttpOnly, Secure y SameSite</strong> firmada con secreto de servidor (SESSION_SECRET). La contraseña nunca se guarda en claro (hash PBKDF2/SHA-512) y está protegida contra fuerza bruta.
             </p>
 
-            <div className="space-y-2">
-              <label htmlFor="inputToken" className="block text-xs font-semibold text-slate-700">
-                Clave Administrativa (ADMIN_API_KEY)
-              </label>
-              <input
-                id="inputToken"
-                type="password"
-                value={inputToken}
-                onChange={(e) => setInputToken(e.target.value)}
-                placeholder="Pega la clave desde Bitwarden..."
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
-
-            {authError && (
-              <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-lg flex items-start gap-1.5">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-                <span>{authError}</span>
+            <form onSubmit={handleLoginGestor} className="space-y-3">
+              <div>
+                <label htmlFor="inputUsuario" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Usuario
+                </label>
+                <input
+                  id="inputUsuario"
+                  type="text"
+                  value={inputUsuario}
+                  onChange={(e) => setInputUsuario(e.target.value)}
+                  placeholder="gestor"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono"
+                />
               </div>
-            )}
 
-            {authSuccessMsg && (
-              <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>{authSuccessMsg}</span>
+              <div>
+                <label htmlFor="inputPassword" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Contraseña (custodiada en Bitwarden)
+                </label>
+                <input
+                  id="inputPassword"
+                  type="password"
+                  value={inputPassword}
+                  onChange={(e) => setInputPassword(e.target.value)}
+                  placeholder="Introduce la contraseña del gestor..."
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  Valor por defecto en entorno didáctico: <code className="bg-slate-100 px-1 rounded text-slate-700">gestor2026</code>
+                </span>
               </div>
-            )}
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowAuthModal(false)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleVerificarAuth}
-                className="px-4 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors"
-              >
-                Verificar Autorización
-              </button>
-            </div>
+              {authError && (
+                <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-lg flex items-start gap-1.5">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              {authSuccessMsg && (
+                <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>{authSuccessMsg}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(false)}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors"
+                >
+                  Iniciar Sesión
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -460,14 +523,40 @@ export default function Home() {
           </button>
         </div>
 
-        {/* CONTENIDO SEGÚN LA VISTA SELECCIONADA */}
-        {vistaActiva === "direccion" && <PanelDireccion riesgos={riesgos} />}
-        {vistaActiva === "tecnico" && <PanelTecnico riesgos={riesgos} />}
-        {vistaActiva === "formulario" && (
-          <FormularioRiesgo
-            onGuardarRiesgo={handleGuardarRiesgoEnServidor}
-            riesgosGuardados={riesgos}
-          />
+        {/* CONTENIDO SEGÚN LA VISTA SELECCIONADA Y ESTADO DE SESIÓN (Prompt 9 / SEG-03) */}
+        {!estaAutorizado ? (
+          <div className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-8 text-center space-y-4 shadow-sm">
+            <div className="w-12 h-12 bg-indigo-50 border border-indigo-200 rounded-full flex items-center justify-center mx-auto text-indigo-600">
+              <Lock className="w-6 h-6" />
+            </div>
+            <div className="max-w-md mx-auto space-y-1.5">
+              <h3 className="text-base font-bold text-slate-900">
+                Acceso Protegido: Sesión de Gestor Requerida
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Conforme al <strong>ENS (op.acc.4)</strong> y <strong>NIST SP 800-53 (AC-6)</strong>, sin una sesión válida del perfil <strong>«gestor»</strong> el servidor restringe el acceso a la lectura y escritura de riesgos.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAuthModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition-colors focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            >
+              <KeyRound className="w-4 h-4" />
+              Iniciar Sesión como Gestor
+            </button>
+          </div>
+        ) : (
+          <>
+            {vistaActiva === "direccion" && <PanelDireccion riesgos={riesgos} />}
+            {vistaActiva === "tecnico" && <PanelTecnico riesgos={riesgos} />}
+            {vistaActiva === "formulario" && (
+              <FormularioRiesgo
+                onGuardarRiesgo={handleGuardarRiesgoEnServidor}
+                riesgosGuardados={riesgos}
+              />
+            )}
+          </>
         )}
       </div>
     </main>

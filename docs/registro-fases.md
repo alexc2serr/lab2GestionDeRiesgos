@@ -352,6 +352,37 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 ### 4. Commit de la Fase
 * **Mensaje:** `Añade evaluación y medidas`
 
+---
+
+## Fase 10 (Prompt 9): Acceso del Gestor y Autorización en el Servidor
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Perfil Único «gestor» y Seguridad de Contraseñas (`lib/auth.ts`)
+* Se implementó el control de acceso para el perfil exclusivo «gestor».
+* **Contraseña nunca en claro:** La verificación se realiza mediante PBKDF2 (SHA-512) con sal determinista utilizando el módulo criptográfico nativo de Node.js (`crypto.pbkdf2Sync`), eliminando dependencias externas vulnerables y asegurando soporte a largo plazo.
+* El hash de la contraseña se configura a través de la variable `GESTOR_PASSWORD_HASH` custodiada en Bitwarden (con script auxiliar `scripts/generar-hash-gestor.ts`).
+
+### 2. Sesión Segura en Cookie Firmada
+* La sesión se almacena exclusivamente en una cookie `session_gestor` con las directivas de seguridad recomendadas:
+  * `HttpOnly`: Impide el acceso al token mediante scripts del lado del cliente (prevención contra robo de sesión por XSS).
+  * `Secure`: Transmisión forzada por HTTPS en entornos de producción y preview.
+  * `SameSite=Lax`: Mitigación frente a ataques de Cross-Site Request Forgery (CSRF).
+* **Firma criptográfica:** Cada token se firma con `HMAC-SHA256` utilizando el secreto de servidor `SESSION_SECRET` y contiene expiración temporal acotada (8 horas).
+
+### 3. Restricción Integral en Servidor (Lecturas y Escrituras)
+* Conforme al requisito del prompt (*"Sin sesión válida no se pueden ver los registros ni crear, modificar o borrar"*), los endpoints `GET`, `POST` y `PUT /api/riesgos` exigen verificación estricta de sesión en el backend, devolviendo `HTTP 401 Unauthorized` si no existe una sesión activa o credencial válida.
+* La interfaz web (`app/page.tsx`) bloquea la visualización del inventario y formularios a usuarios no autenticados, presentando el botón y modal de inicio de sesión.
+* Se implementó el cierre de sesión (`POST /api/auth/logout`) que destruye inmediatamente la cookie de sesión.
+
+### 4. Mitigación contra Ataques de Fuerza Bruta (Rate Limiting)
+* Se integró un limitador de intentos fallidos en servidor: tras 5 intentos fallidos consecutivos, el cliente queda bloqueado durante 15 minutos (`HTTP 429 Too Many Requests`).
+
+### 5. Commit de la Fase
+* **Mensaje:** `Protege acceso y escrituras`
+
+
 
 
 

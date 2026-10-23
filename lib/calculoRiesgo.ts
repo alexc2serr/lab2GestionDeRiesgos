@@ -4,7 +4,11 @@
  * según las reglas didácticas de la Academia Horizonte (Bajo 1-2, Medio 3-4, Alto 6-9).
  * El navegador solo consume y muestra el resultado devuelto por esta función.
  */
-import { ProbabilidadValor, ImpactoValor, NivelRiesgo } from "@/types/riesgo";
+export type ProbabilidadValor = 1 | 2 | 3;
+export type ImpactoValor = 1 | 2 | 3;
+export type NivelRiesgo = "Bajo" | "Medio" | "Alto";
+export type PrioridadMedida = "Baja" | "Media" | "Alta";
+export type EstadoMedida = "propuesta" | "implantada" | "verificada";
 
 export interface ResultadoCalculoRiesgo {
   probabilidad: ProbabilidadValor;
