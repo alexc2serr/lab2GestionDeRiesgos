@@ -295,4 +295,37 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 2. **Desvinculación Didáctica de la Fórmula de Riesgo:** Se revisó la formulación de la matriz para evitar atribuir la escala didáctica 3x3 ($\text{Probabilidad} \times \text{Impacto} \in [1, 9]$) directamente a NIST o ENS, clarificando que constituye una regla pedagógica específica del laboratorio.
 3. **Mantenimiento del Flujo en la Rama `gemini`:** Se mantuvo todo el ciclo de desarrollo, CI/CD y despliegue Preview en la rama `gemini` para garantizar la trazabilidad exigida por el laboratorio.
 
+---
+
+# PARTE 2: SECURIZACIÓN DE LA APLICACIÓN
+
+## Fase 8 (Prompt 7): Base de Datos PostgreSQL y Persistencia Segura
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Transición a PostgreSQL (Neon) y Modelo Relacional
+* **Migración SQL (`db/01_crear_tabla_riesgos.sql`):**
+  * Definición DDL de la tabla `riesgos` con campos para los 4 bloques del formulario, campos de evaluación didáctica ($P$, $I$, justificaciones, puntuación, nivel), medidas de protección, estado del ciclo de vida (`propuesta`, `implantada`, `verificada`) y auditoría temporal (`fecha_creacion`, `fecha_modificacion`).
+  * Restricciones de integridad referencial y de dominio (`CHECK` en probabilidad 1..3, impacto 1..3, niveles y prioridades válidos).
+  * Trigger automatizado en PostgreSQL para actualizar `fecha_modificacion` en cada actualización.
+  * Carga inicial idempotente de los riesgos de referencia (`RSG-001` y `RSG-002`).
+
+### 2. Segregación de Roles y Mínimo Privilegio (SEG-04 / NIST AC-6)
+* **Script de permisos (`db/roles.sql`):**
+  * Rol `admin_riesgos`: Cuenta técnica con `ALL PRIVILEGES` en el esquema público, utilizada únicamente en local para migraciones (`DATABASE_URL_ADMIN`).
+  * Rol `app_riesgos`: Cuenta utilizada por el servidor web en tiempo de ejecución (`DATABASE_URL`). Posee exclusivamente permisos DML (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) sobre la tabla `riesgos`, revocando explícitamente `CREATE TABLE`, `DROP TABLE`, `ALTER TABLE` y `TRUNCATE`.
+* **Higiene de Secretos:** Los scripts SQL no contienen contraseñas; se gestionan mediante variables de entorno custodiadas en Bitwarden.
+* **Actualización de `.env.example`:** Documentadas `DATABASE_URL` y `DATABASE_URL_ADMIN` con su finalidad y nivel de privilegio.
+
+### 3. Operaciones de Servidor y Sustitución de Aviso
+* **Adaptador (`lib/db.ts` y `lib/storage.ts`):** Pool de conexiones `pg.Pool` con reutilización global, mapeo seguro de tipos y fallback local para desarrollo. El navegador nunca recibe cadenas de conexión (**SEG-02**).
+* **Endpoints API (`app/api/riesgos/route.ts`):** Métodos `GET` (listar), `POST` (crear) y `PUT` (modificar) protegidos con control de autorización en servidor (**SEG-03**).
+* **Interfaz de Usuario:** Sustituido el aviso «Borrador temporal» por el banner de persistencia activa en base de datos PostgreSQL y añadido el listado interactivo de riesgos guardados en `components/FormularioRiesgo.tsx`.
+* **Documentación técnica:** Creado `docs/base-de-datos.md`.
+
+### 4. Commit de la Fase
+* **Mensaje:** `Añade persistencia de riesgos`
+
+
 

@@ -2,6 +2,7 @@ export type ProbabilidadValor = 1 | 2 | 3;
 export type ImpactoValor = 1 | 2 | 3;
 export type NivelRiesgo = "Bajo" | "Medio" | "Alto";
 export type PrioridadMedida = "Baja" | "Media" | "Alta";
+export type EstadoMedida = "propuesta" | "implantada" | "verificada";
 
 export interface Riesgo {
   id: string;
@@ -21,7 +22,7 @@ export interface Riesgo {
   // Bloque D: Supuestos
   supuestos?: string;
 
-  // Evaluación del Riesgo (Fase 4)
+  // Evaluación del Riesgo
   probabilidad: ProbabilidadValor;
   justificacionProbabilidad: string;
   impacto: ImpactoValor;
@@ -29,11 +30,16 @@ export interface Riesgo {
   puntuacion: number; // Probabilidad * Impacto (1 a 9)
   nivel: NivelRiesgo; // Bajo (1-2), Medio (3-4), Alto (6-9)
 
-  // Medida de Protección (Fase 4)
+  // Medida de Protección
   medida: string;
   prioridad: PrioridadMedida;
   comprobacionEficacia: string;
+  estadoMedida: EstadoMedida; // propuesta | implantada | verificada
   referenciaControl?: string; // ENS / NIST SP 800-53
+
+  // Auditoría temporal
+  fechaCreacion: string;
+  fechaModificacion: string;
 }
 
 export function calcularNivelRiesgo(p: ProbabilidadValor, i: ImpactoValor): { puntuacion: number; nivel: NivelRiesgo } {

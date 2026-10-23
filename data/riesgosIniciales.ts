@@ -24,7 +24,10 @@ export const RIESGOS_INICIALES: Riesgo[] = [
     prioridad: "Alta",
     comprobacionEficacia:
       "Simular una contingencia restaurando el último backup en un servidor de pruebas y verificar mediante script automatizado que el 100% de los registros de alumnos se recuperan íntegros y accesibles en menos de 2 horas.",
+    estadoMedida: "propuesta",
     referenciaControl: "ENS mp.info.2 / NIST SP 800-53 CP-4 y CP-9",
+    fechaCreacion: "2026-10-08T10:00:00.000Z",
+    fechaModificacion: "2026-10-08T10:00:00.000Z",
   },
   {
     id: "RSG-002",
@@ -49,7 +52,10 @@ export const RIESGOS_INICIALES: Riesgo[] = [
     prioridad: "Alta",
     comprobacionEficacia:
       "Ejecutar una prueba técnica de penetración controlada intentando lanzar sentencias 'DROP TABLE matriculas;' y 'ALTER TABLE...' autenticado como el usuario de la app, constatando que el motor de base de datos deniega la operación con error 'permission denied' (cumplimiento SEG-04).",
+    estadoMedida: "propuesta",
     referenciaControl: "ENS op.acc.4 / NIST SP 800-53 AC-6 (Least Privilege)",
+    fechaCreacion: "2026-10-08T10:00:00.000Z",
+    fechaModificacion: "2026-10-08T10:00:00.000Z",
   },
 ];
 

@@ -122,7 +122,43 @@ export const RiesgoSchema = z.object({
     .min(5, "La comprobación de eficacia debe tener al menos 5 caracteres")
     .max(300, "La comprobación de eficacia no puede superar los 300 caracteres")
     .transform(sanitizarTextoPlano),
+
+  estadoMedida: z
+    .enum(["propuesta", "implantada", "verificada"], {
+      errorMap: () => ({
+        message: "El estado de la medida debe ser 'propuesta', 'implantada' o 'verificada'",
+      }),
+    })
+    .default("propuesta"),
+
+  referenciaControl: z
+    .string()
+    .max(120, "La referencia de control no puede superar los 120 caracteres")
+    .transform(sanitizarTextoPlano)
+    .optional(),
+});
+
+export const RiesgoModificacionSchema = z.object({
+  id: z.string({ required_error: "El ID del riesgo es obligatorio para modificarlo" }),
+  proceso: z.string().min(2).max(80).transform(sanitizarTextoPlano).optional(),
+  activo: z.enum(["plataforma web", "base de datos", "copias de seguridad"]).optional(),
+  objetivo: z.enum(["completar solicitudes en plazo", "conservar y recuperar registros"]).optional(),
+  condicion: z.string().min(5).max(200).transform(sanitizarTextoPlano).optional(),
+  amenaza: z.string().min(3).max(150).transform(sanitizarTextoPlano).optional(),
+  evento: z.string().min(5).max(200).transform(sanitizarTextoPlano).optional(),
+  consecuencia: z.string().min(5).max(250).transform(sanitizarTextoPlano).optional(),
+  supuestos: z.string().max(300).transform(sanitizarTextoPlano).optional(),
+  probabilidad: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  justificacionProbabilidad: z.string().min(5).max(300).transform(sanitizarTextoPlano).optional(),
+  impacto: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  justificacionImpacto: z.string().min(5).max(300).transform(sanitizarTextoPlano).optional(),
+  medida: z.string().min(5).max(250).transform(sanitizarTextoPlano).optional(),
+  prioridad: z.enum(["Baja", "Media", "Alta"]).optional(),
+  comprobacionEficacia: z.string().min(5).max(300).transform(sanitizarTextoPlano).optional(),
+  estadoMedida: z.enum(["propuesta", "implantada", "verificada"]).optional(),
+  referenciaControl: z.string().max(120).transform(sanitizarTextoPlano).optional(),
 });
 
 export type RiesgoValidado = z.infer<typeof RiesgoSchema>;
+export type RiesgoModificacionValidado = z.infer<typeof RiesgoModificacionSchema>;
 

@@ -464,7 +464,10 @@ export default function Home() {
         {vistaActiva === "direccion" && <PanelDireccion riesgos={riesgos} />}
         {vistaActiva === "tecnico" && <PanelTecnico riesgos={riesgos} />}
         {vistaActiva === "formulario" && (
-          <FormularioRiesgo onGuardarRiesgo={handleGuardarRiesgoEnServidor} />
+          <FormularioRiesgo
+            onGuardarRiesgo={handleGuardarRiesgoEnServidor}
+            riesgosGuardados={riesgos}
+          />
         )}
       </div>
     </main>

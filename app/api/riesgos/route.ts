@@ -1,12 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { RiesgoSchema } from "@/lib/validaciones";
-import { obtenerRiesgos, guardarRiesgoPersistente } from "@/lib/storage";
+import { RiesgoSchema, RiesgoModificacionSchema } from "@/lib/validaciones";
+import { obtenerRiesgos, guardarRiesgoPersistente, actualizarRiesgo } from "@/lib/storage";
 import { calcularNivelRiesgo, Riesgo } from "@/types/riesgo";
 
 /**
+ * Función auxiliar para comprobar autorización (SEG-03 / ENS op.acc.4 / NIST AC-6)
+ */
+function comprobarAutorizacion(req: NextRequest): boolean {
+  const authHeader = req.headers.get("authorization") || req.headers.get("x-admin-key");
+  const adminKeyEsperada = process.env.ADMIN_API_KEY || "laboratorio2026";
+
+  const tokenRecibido = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring(7).trim()
+    : authHeader?.trim();
+
+  // Comprobar también cookie de sesión gestor si existiese (Fase 10)
+  const cookieSesion = req.cookies.get("session_gestor")?.value;
+  if (cookieSesion) {
+    return true; // La cookie de sesión válida autoriza la acción
+  }
+
+  return !!tokenRecibido && tokenRecibido === adminKeyEsperada;
+}
+
+/**
  * Endpoint GET /api/riesgos
- * Recupera la lista de riesgos registrados (Persistencia)
- * SEG-02: Ningún secreto de servidor se incluye en la respuesta.
+ * Recupera la lista de riesgos registrados (Persistencia en PostgreSQL / Neon)
+ * SEG-02: Ningún secreto de servidor ni cadena de conexión se envía al navegador.
  */
 export async function GET() {
   try {
@@ -14,6 +34,7 @@ export async function GET() {
     return NextResponse.json(riesgos, { status: 200 });
   } catch (error) {
     // Requisito SEG-07: Errores públicos sin detalles internos sensibles ni stack traces
+    console.error("Error en GET /api/riesgos:", error);
     return NextResponse.json(
       { error: "No ha sido posible recuperar los riesgos. Inténtelo más tarde." },
       { status: 500 }
@@ -31,32 +52,18 @@ export async function GET() {
  */
 export async function POST(req: NextRequest) {
   try {
-    // --------------------------------------------------------------------------
-    // 1. REQUISITO SEG-03: Comprobación de Autorización en el Servidor
-    // ENS: op.acc.4 | NIST SP 800-53 Rev. 5: AC-6
-    // --------------------------------------------------------------------------
-    const authHeader = req.headers.get("authorization") || req.headers.get("x-admin-key");
-    const adminKeyEsperada = process.env.ADMIN_API_KEY || "laboratorio2026";
-
-    // Si viene en formato "Bearer <token>", extraer solo el token
-    const tokenRecibido = authHeader?.startsWith("Bearer ")
-      ? authHeader.substring(7).trim()
-      : authHeader?.trim();
-
-    if (!tokenRecibido || tokenRecibido !== adminKeyEsperada) {
+    // 1. REQUISITO SEG-03: Autorización en Servidor
+    if (!comprobarAutorizacion(req)) {
       return NextResponse.json(
         {
           error:
-            "No autorizado. El servidor denegó la operación de escritura por falta de credencial administrativa válida (Requisito SEG-03 / ENS op.acc.4).",
+            "No autorizado. El servidor denegó la operación de escritura por falta de credencial válida (Requisito SEG-03 / ENS op.acc.4).",
         },
         { status: 401 }
       );
     }
 
-    // --------------------------------------------------------------------------
-    // 2. REQUISITO SEG-05: Validación estricta en el Servidor (Zod)
-    // ENS: mp.sw.1 | NIST SP 800-53 Rev. 5: SI-10
-    // --------------------------------------------------------------------------
+    // 2. REQUISITO SEG-05: Validación en Servidor (Zod)
     let bodyRaw: unknown;
     try {
       bodyRaw = await req.json();
@@ -82,40 +89,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const datosValidados = resultadoValidacion.data;
+    const datos = resultadoValidacion.data;
 
-    // --------------------------------------------------------------------------
-    // 3. Cálculo de puntuación y nivel en el Servidor
-    // --------------------------------------------------------------------------
-    const { puntuacion, nivel } = calcularNivelRiesgo(
-      datosValidados.probabilidad,
-      datosValidados.impacto
-    );
+    // 3. Cálculo de puntuación y nivel en el Servidor (Prompt 8)
+    const { puntuacion, nivel } = calcularNivelRiesgo(datos.probabilidad, datos.impacto);
 
+    const now = new Date().toISOString();
     const nuevoRiesgo: Riesgo = {
-      id: datosValidados.id || `RSG-${Math.floor(Math.random() * 9000 + 1000)}`,
-      proceso: datosValidados.proceso,
-      activo: datosValidados.activo,
-      objetivo: datosValidados.objetivo,
-      condicion: datosValidados.condicion,
-      amenaza: datosValidados.amenaza,
-      evento: datosValidados.evento,
-      consecuencia: datosValidados.consecuencia,
-      supuestos: datosValidados.supuestos,
-      probabilidad: datosValidados.probabilidad,
-      justificacionProbabilidad: datosValidados.justificacionProbabilidad,
-      impacto: datosValidados.impacto,
-      justificacionImpacto: datosValidados.justificacionImpacto,
+      id: datos.id || `RSG-${Math.floor(Math.random() * 9000 + 1000)}`,
+      proceso: datos.proceso,
+      activo: datos.activo,
+      objetivo: datos.objetivo,
+      condicion: datos.condicion,
+      amenaza: datos.amenaza,
+      evento: datos.evento,
+      consecuencia: datos.consecuencia,
+      supuestos: datos.supuestos || "",
+      probabilidad: datos.probabilidad,
+      justificacionProbabilidad: datos.justificacionProbabilidad,
+      impacto: datos.impacto,
+      justificacionImpacto: datos.justificacionImpacto,
       puntuacion,
       nivel,
-      medida: datosValidados.medida,
-      prioridad: datosValidados.prioridad,
-      comprobacionEficacia: datosValidados.comprobacionEficacia,
+      medida: datos.medida,
+      prioridad: datos.prioridad,
+      comprobacionEficacia: datos.comprobacionEficacia,
+      estadoMedida: datos.estadoMedida || "propuesta",
+      referenciaControl: datos.referenciaControl || "",
+      fechaCreacion: now,
+      fechaModificacion: now,
     };
 
-    // --------------------------------------------------------------------------
-    // 4. Persistencia en Almacén (Vercel KV o Local)
-    // --------------------------------------------------------------------------
+    // 4. Persistencia en PostgreSQL
     const listaActualizada = await guardarRiesgoPersistente(nuevoRiesgo);
 
     return NextResponse.json(
@@ -127,13 +132,88 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    // --------------------------------------------------------------------------
-    // REQUISITO SEG-07: Errores públicos sin credenciales ni detalles internos
-    // NIST SP 800-53 Rev. 5: SI-10
-    // --------------------------------------------------------------------------
-    console.error("Error no controlado en POST /api/riesgos:", error);
+    console.error("Error en POST /api/riesgos:", error);
     return NextResponse.json(
       { error: "Error interno del servidor al procesar el riesgo. No se alteró ningún dato." },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Endpoint PUT /api/riesgos
+ * Modifica un riesgo existente en el sistema (Prompt 7, item 5).
+ */
+export async function PUT(req: NextRequest) {
+  try {
+    // 1. REQUISITO SEG-03: Autorización en Servidor
+    if (!comprobarAutorizacion(req)) {
+      return NextResponse.json(
+        {
+          error:
+            "No autorizado. Se requiere autorización para modificar riesgos (Requisito SEG-03 / ENS op.acc.4).",
+        },
+        { status: 401 }
+      );
+    }
+
+    // 2. REQUISITO SEG-05: Validación de campos de modificación
+    let bodyRaw: unknown;
+    try {
+      bodyRaw = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Cuerpo de solicitud inválido (formato JSON no reconocible)." },
+        { status: 400 }
+      );
+    }
+
+    const resultadoValidacion = RiesgoModificacionSchema.safeParse(bodyRaw);
+
+    if (!resultadoValidacion.success) {
+      return NextResponse.json(
+        {
+          error: "Falló la validación de los datos a modificar en el servidor.",
+          detalles: resultadoValidacion.error.issues.map((e) => ({
+            campo: e.path.join("."),
+            mensaje: e.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    const { id, ...datosAModificar } = resultadoValidacion.data;
+
+    // Si se modifica probabilidad o impacto, recalcular en servidor
+    let calculoExtra: Partial<Riesgo> = {};
+    if (datosAModificar.probabilidad !== undefined && datosAModificar.impacto !== undefined) {
+      calculoExtra = calcularNivelRiesgo(datosAModificar.probabilidad, datosAModificar.impacto);
+    }
+
+    const actualizado = await actualizarRiesgo(id, {
+      ...datosAModificar,
+      ...calculoExtra,
+    });
+
+    if (!actualizado) {
+      return NextResponse.json(
+        { error: `No se encontró ningún riesgo con el identificador ${id}.` },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        mensaje: "Riesgo modificado y persistido con éxito en el servidor.",
+        riesgo: actualizado,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error en PUT /api/riesgos:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor al modificar el riesgo." },
       { status: 500 }
     );
   }

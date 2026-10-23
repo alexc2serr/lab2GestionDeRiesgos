@@ -33,6 +33,7 @@ El sistema permite:
 * **[Caso de Estudio (Academia Horizonte)](file:///docs/caso.md):** Descripción del caso ficticio, proceso de matriculación, activos y condiciones conocidas.
 * **[Metodología de Evaluación de Riesgos](file:///docs/evaluacion-riesgos.md):** Escalas didácticas de probabilidad e impacto (1 a 3), umbrales de puntuación y reglas metodológicas.
 * **[Formulación Guiada del Riesgo](file:///docs/formulacion-riesgo.md):** Estructura sintáctica, campos del formulario, validaciones provisionales y tratamiento de SEG-05.
+* **[Modelo y Persistencia en Base de Datos](file:///docs/base-de-datos.md):** Esquema relacional de riesgos, segregación de roles (`admin_riesgos` y `app_riesgos`) y procedimiento de migración en PostgreSQL (Neon).
 * **[Evaluación y Medidas de Protección](file:///docs/medidas-proteccion.md):** Escenarios completos evaluados (RSG-001 y RSG-002), medidas técnicas, pruebas de eficacia y respuesta a la pregunta de cierre para dirección.
 * **[Registro de Despliegue en Vercel](file:///docs/despliegue.md):** Evidencias del despliegue en entorno Preview, commit trazable y comprobación de textos obligatorios.
 * **[Registro de Fases y Evidencias](file:///docs/registro-fases.md):** Bitácora cronológica con el detalle de tareas completadas, decisiones y commits de cada etapa del laboratorio.

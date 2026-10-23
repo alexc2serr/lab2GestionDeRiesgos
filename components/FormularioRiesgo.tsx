@@ -11,6 +11,8 @@ import {
   Calculator,
   PlusCircle,
   ShieldCheck,
+  Database,
+  Calendar,
 } from "lucide-react";
 import {
   Riesgo,
@@ -22,6 +24,7 @@ import {
 
 interface Props {
   onGuardarRiesgo?: (nuevoRiesgo: Riesgo) => void;
+  riesgosGuardados?: Riesgo[];
 }
 
 export interface RiesgoFormState {
@@ -83,7 +86,7 @@ const EJEMPLO_ACADEMICO: RiesgoFormState = {
     "Simular recuperación completa desde el último backup en entorno de prueba y constatar que el 100% de los datos son legibles.",
 };
 
-export default function FormularioRiesgo({ onGuardarRiesgo }: Props) {
+export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [] }: Props) {
   const [formData, setFormData] = useState<RiesgoFormState>(ESTADO_INICIAL);
   const [showConceptHelp, setShowConceptHelp] = useState(false);
   const [feedbackMensaje, setFeedbackMensaje] = useState<string | null>(null);
@@ -167,6 +170,9 @@ export default function FormularioRiesgo({ onGuardarRiesgo }: Props) {
         medida: formData.medida.trim(),
         prioridad: formData.prioridad,
         comprobacionEficacia: formData.comprobacionEficacia.trim(),
+        estadoMedida: "propuesta",
+        fechaCreacion: new Date().toISOString(),
+        fechaModificacion: new Date().toISOString(),
       };
 
       onGuardarRiesgo(nuevoRiesgo);
@@ -217,13 +223,16 @@ export default function FormularioRiesgo({ onGuardarRiesgo }: Props) {
         </div>
       )}
 
-      {/* Aviso de borrador temporal */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 flex items-center justify-between">
-        <span className="font-medium">
-          ⚠️ Borrador temporal. No se guarda al recargar la página.
-        </span>
-        <span className="text-[11px] text-amber-700 hidden sm:inline">
-          Los datos permanecen únicamente en memoria en esta fase del ejercicio.
+      {/* Persistencia en Base de Datos (Prompt 7) */}
+      <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-3 text-xs text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-sm">
+        <div className="flex items-center gap-2">
+          <Database className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="font-semibold">
+            Persistencia en Base de Datos Activa: Los riesgos guardados se sincronizan en PostgreSQL (Neon) y se mantienen al recargar la página.
+          </span>
+        </div>
+        <span className="text-[11px] text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+          Rol app_riesgos (SEG-04)
         </span>
       </div>
 
@@ -668,6 +677,68 @@ export default function FormularioRiesgo({ onGuardarRiesgo }: Props) {
               <PlusCircle className="w-4 h-4" />
               Incorporar riesgo a la evaluación
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Listado de riesgos guardados que se mantiene al recargar la página (Prompt 7, item 6) */}
+      <div className="mt-8 pt-6 border-t border-slate-200 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Database className="w-5 h-5 text-indigo-600" />
+            <h3 className="text-base font-bold text-slate-900">
+              Listado de Riesgos Guardados ({riesgosGuardados.length})
+            </h3>
+          </div>
+          <span className="text-xs text-slate-500">
+            Sincronizados en base de datos persistente
+          </span>
+        </div>
+
+        {riesgosGuardados.length === 0 ? (
+          <p className="text-xs text-slate-500 italic p-4 bg-slate-50 rounded-lg border border-slate-200">
+            No hay riesgos guardados todavía. Registra uno usando el formulario superior.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {riesgosGuardados.map((r) => {
+              const badgeBg =
+                r.nivel === "Alto"
+                  ? "bg-rose-50 text-rose-700 border-rose-200"
+                  : r.nivel === "Medio"
+                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200";
+
+              return (
+                <div
+                  key={r.id}
+                  className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 hover:border-indigo-300 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-indigo-900 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                      {r.id}
+                    </span>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${badgeBg}`}>
+                      {r.nivel} ({r.puntuacion})
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-700 font-medium line-clamp-2">
+                    Debido a {r.condicion}, {r.amenaza} sobre {r.activo}, causando {r.consecuencia}.
+                  </p>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>
+                      Medida: <strong>{r.prioridad}</strong> ({r.estadoMedida || "propuesta"})
+                    </span>
+                    <span className="flex items-center gap-1 font-mono text-[10px]">
+                      <Calendar className="w-3 h-3 text-slate-400" />
+                      {r.fechaModificacion ? r.fechaModificacion.slice(0, 10) : "Hoy"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
