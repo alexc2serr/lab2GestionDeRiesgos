@@ -48,21 +48,21 @@ function assert(condicion: boolean, descripcion: string) {
 
 const baseValida = {
   proceso: "matrícula",
-  activo: "base de datos",
-  objetivo: "conservar y recuperar registros",
+  activo: "base de datos" as const,
+  objetivo: "conservar y recuperar registros" as const,
   condicion: "no se ha probado la restauración de las copias",
   amenaza: "fallo del almacenamiento",
   evento: "pérdida de acceso a registros confirmados",
   consecuencia: "imposibilidad de reconstruir matrículas",
-  probabilidad: 2,
+  probabilidad: 2 as const,
   justificacionProbabilidad: "Campaña de 7 días sobre instancia única de BD.",
-  impacto: 3,
+  impacto: 3 as const,
   justificacionImpacto: "Grave: pérdida irrecuperable de alumnos admitidos.",
   medida: "Protocolo de restauración periódica con checksums SHA-256.",
-  prioridad: "Alta",
+  prioridad: "Alta" as const,
   efectoEsperado: "Garantizar RTO < 4h y RPO < 1h.",
   comprobacionEficacia: "Simulacro de restauración en contingencia y cotejo de datos.",
-  estadoMedida: "propuesta",
+  estadoMedida: "propuesta" as const,
 };
 
 function simularPeticionMutacion(cookieSesion?: string, bearerToken?: string) {
@@ -119,6 +119,13 @@ async function ejecutar() {
     "Las 9 combinaciones calculan con precisión matemática la puntuación y el nivel (Bajo 1-2, Medio 3-4, Alto 6-9)."
   );
 
+  // Verificación directa de la función unitaria calcularNivelRiesgoServidor
+  const calculoDirecto = calcularNivelRiesgoServidor(2, 3);
+  assert(
+    calculoDirecto.puntuacion === 6 && calculoDirecto.nivel === "Alto",
+    "Función unitaria de cálculo en servidor evalúa correctamente (P=2 x I=3 -> Pts: 6, Nivel: Alto)."
+  );
+
   // -----------------------------------------------------------------------------
   // PRUEBA 2: VALIDACIÓN (Prompt 12, Punto 2)
   // -----------------------------------------------------------------------------
@@ -148,6 +155,13 @@ async function ejecutar() {
     "Rechaza valor fuera de la lista permitida ('activo' no reconocido en el catálogo)."
   );
 
+  // 2.4: Validación de modificaciones parciales (RiesgoModificacionSchema)
+  const modValida = RiesgoModificacionSchema.safeParse({ id: "RSG-001", estadoMedida: "implantada", prioridad: "Media" });
+  assert(
+    modValida.success === true,
+    "RiesgoModificacionSchema valida modificaciones parciales válidas del ciclo de vida."
+  );
+
   // -----------------------------------------------------------------------------
   // PRUEBA 3: PERSISTENCIA (Prompt 12, Punto 3)
   // -----------------------------------------------------------------------------
@@ -168,7 +182,7 @@ async function ejecutar() {
   assert(encontrado === true, "Un riesgo creado persiste y se recupera con éxito en consultas posteriores.");
 
   // -----------------------------------------------------------------------------
-  // PRUEBA 4: ESCRITURA NO AUTORIZADA (Prompt 12, Punto 4)
+  // PRUEBA 4: ESCRITURA NO AUTORIZADA Y AUTENTICACIÓN (Prompt 12, Punto 4 & Prompt 9)
   // -----------------------------------------------------------------------------
   console.log("\n🔹 4. PRUEBA DE ESCRITURA NO AUTORIZADA (SEG-03):");
   const riesgosAntes = await obtenerRiesgos();
@@ -185,6 +199,43 @@ async function ejecutar() {
     intentoTokenFalso.status === 401,
     "Rechaza intentos de mutación con cookies de sesión manipuladas."
   );
+
+  // Verificación de autenticación de gestor con hash PBKDF2 y HMAC
+  const hashGenerado = hashContrasena("gestor2026");
+  assert(
+    typeof hashGenerado === "string" && hashGenerado.length === 128,
+    "Genera hash criptográfico determinista SHA-512 (128 caracteres hexadecimales)."
+  );
+  assert(
+    verificarContrasenaGestor("gestor2026") === true,
+    "Verifica con éxito la contraseña correcta del gestor mediante PBKDF2 (SHA-512)."
+  );
+  assert(
+    verificarContrasenaGestor("claveErronea") === false,
+    "Rechaza inmediatamente contraseñas erróneas del gestor."
+  );
+
+  const tokenFirmado = firmarTokenSesion({ usuario: "gestor", exp: Date.now() + 3600000 });
+  assert(
+    verificarTokenSesion(tokenFirmado)?.usuario === "gestor",
+    "Firma y valida correctamente tokens de sesión con HMAC-SHA256."
+  );
+
+  // Verificación de limitación contra fuerza bruta (Rate Limiting)
+  const ipPrueba = "192.168.100.99";
+  limpiarIntentosFallidos(ipPrueba);
+  assert(
+    comprobarLimiteIntentos(ipPrueba).permitido === true,
+    "Permite intentos dentro del umbral normal de acceso."
+  );
+  for (let i = 0; i < 5; i++) {
+    registrarIntentoFallido(ipPrueba);
+  }
+  assert(
+    comprobarLimiteIntentos(ipPrueba).permitido === false,
+    "Bloquea temporalmente al cliente tras superar 5 intentos fallidos consecutivos."
+  );
+  limpiarIntentosFallidos(ipPrueba);
 
   const riesgosDespues = await obtenerRiesgos();
   assert(

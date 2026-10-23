@@ -8,6 +8,7 @@
 /out/
 /build
 /dist
+*.tsbuildinfo
 
 # Variables de entorno y secretos (SEG-01 / SEG-02)
 # Solo se permite .env.example en el repositorio
