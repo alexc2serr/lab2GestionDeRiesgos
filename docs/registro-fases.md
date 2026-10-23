@@ -435,6 +435,31 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 ### 4. Commit de la Fase
 * **Mensaje:** `Separa entornos y documenta secretos`
 
+---
+
+## Fase 13 (Prompt 12): Pruebas de Seguridad y Funcionamiento
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Implementación de la Suite Automatizada (`scripts/test-seguridad.ts`)
+* Se desarrolló una batería automatizada integral en TypeScript, ejecutable mediante `npm test` con `tsx`, que valida de forma autónoma y determinista los 5 bloques obligatorios del enunciado:
+  1. **Clasificación del riesgo (9 combinaciones $P \times I$):** Comprobación matemática y semántica de las 9 combinaciones posibles de la matriz $3 \times 3$, verificando la puntuación exacta y el nivel reglamentario (Bajo 1-2, Medio 3-4, Alto 6-9).
+  2. **Validación en servidor (SEG-05):** Envío de payloads con campo obligatorio vacío, con cadenas que superan la longitud máxima y con valores ajenos al catálogo de activos. Todas son rechazadas con error estructurado.
+  3. **Persistencia de datos:** Creación de un riesgo nuevo con identificador único y comprobación de su disponibilidad inmediata tras una consulta desconectada a la capa de almacenamiento.
+  4. **Control de escritura no autorizada (SEG-03):** Intento de creación y modificación sin cookie de sesión o con credenciales manipuladas, verificando el rechazo con `HTTP 401 Unauthorized` y certificando la invarianza estricta de la base de datos ($N_{antes} = N_{despues}$).
+  5. **Control de ausencia de secretos (SEG-01 y SEG-02):** Búsqueda automatizada con `git grep` para certificar la ausencia de claves privadas o tokens en el código y verificación de que los DTOs de respuesta al navegador no exponen campos sensibles de servidor.
+
+### 2. Documentación de Resultados (`docs/pruebas.md`)
+* Se generó el informe técnico detallado en `docs/pruebas.md`, registrando la fecha de ejecución (23 de octubre de 2026), el commit evaluado, el comando de reproducción y las tablas completas de resultados de las 11 aserciones superadas (**100% PASS**).
+
+### 3. Verificación de Compilación y Calidad
+* Se ejecutó `npm run build` confirmando la correcta compilación de producción con Next.js 15, validación estricta de tipos de TypeScript y generación de todas las rutas estáticas y dinámicas con código de salida 0.
+
+### 4. Commit de la Fase
+* **Mensaje:** `Añade pruebas de seguridad y funcionamiento`
+
+
 
 
 

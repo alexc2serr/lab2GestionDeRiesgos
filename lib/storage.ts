@@ -11,7 +11,7 @@ import {
   obtenerRiesgoPorId,
   eliminarRiesgo,
   restablecerRiesgos,
-} from "./db";
+} from "@/lib/db";
 
 /**
  * Recupera la lista de riesgos persistidos
