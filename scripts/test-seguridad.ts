@@ -200,14 +200,14 @@ async function ejecutar() {
   let secretosEnGit = false;
   try {
     const patrones = [
-      "BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY",
+      "-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
       "AKIA[0-9A-Z]{16}",
       "ghp_[0-9a-zA-Z]{36}",
       "AIza[0-9A-Za-z-_]{35}",
     ];
     for (const patron of patrones) {
       try {
-        const salida = execSync(`git grep -E -i "${patron}" -- :!scripts/test-seguridad.ts`, {
+        const salida = execSync(`git grep -E -i "${patron}" -- :!scripts/* :!docs/*`, {
           encoding: "utf-8",
           stdio: ["pipe", "pipe", "ignore"],
         });

@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.32.7
+    container_name: vaultwarden-local
+    restart: unless-stopped
+    # Vinculación estricta a localhost (127.0.0.1) para impedir exposición en interfaces públicas o LAN
+    ports:
+      - "127.0.0.1:8080:80"
+    environment:
+      # Registro de nuevos usuarios deshabilitado por seguridad (Prompt 14)
+      - SIGNUPS_ALLOWED=false
+      - INVITATIONS_ALLOWED=false
+      - SHOW_PASSWORD_HINT=false
+      # El panel de administración solo acepta un hash seguro Argon2 (nunca contraseña en claro)
+      # Generar con: docker run --rm -it vaultwarden/server:1.32.7 /vaultwarden hash
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN_HASH:-}
+      # Parámetros operativos
+      - WEBSOCKET_ENABLED=true
+      - LOG_LEVEL=info
+      - EXTENDED_LOGGING=true
+    volumes:
+      # Volumen local persistente para SQLite y adjuntos, excluido explícitamente en .gitignore
+      - ./vw-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/alive"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

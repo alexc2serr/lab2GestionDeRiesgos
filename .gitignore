@@ -21,6 +21,13 @@
 # Configuración y despliegues locales de Vercel
 .vercel
 
+# Datos de persistencia local de Vaultwarden (Ampliación)
+/vaultwarden/vw-data/
+/vaultwarden/data/
+vaultwarden/**/data/
+*.sqlite3*
+
+
 # Logs y depuración
 npm-debug.log*
 yarn-debug.log*
@@ -43,3 +50,10 @@ Thumbs.db
 
 
 .vercel
+
+# Datos de persistencia local de Vaultwarden (Ampliación)
+/vaultwarden/vw-data/
+/vaultwarden/data/
+vaultwarden/**/data/
+*.sqlite3*
+

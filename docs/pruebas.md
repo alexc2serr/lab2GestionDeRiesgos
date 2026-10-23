@@ -91,7 +91,7 @@ RESULTADO DE LA SUITE DE PRUEBAS: 11 PASADOS, 0 FALLIDOS
 - **Objetivo:** Comprobar de manera automatizada que no existen secretos ni credenciales en claro en el repositorio de Git ni en los objetos de transferencia de datos (DTOs) devueltos al cliente web.
 - **Escenarios evaluados:**
   1. **Escaneo de historial y árbol de Git (`git grep`):**  
-     Búsqueda automatizada de patrones de claves privadas RSA/EC/SSH (`BEGIN PRIVATE KEY`), tokens de AWS (`AKIA...`), tokens de GitHub (`ghp_...`) y claves de API de Google (`AIza...`).  
+     Búsqueda automatizada de patrones de claves privadas RSA/EC/SSH (`-----BEGIN ... PRIVATE KEY-----`), tokens de AWS (`AKIA...`), tokens de GitHub (`ghp_...`) y claves de API de Google (`AIza...`).  
      *Resultado:* 0 coincidencias en archivos de código o configuración. (✅ PASS)
   2. **Inspección de DTOs enviados al navegador:**  
      Comprobación recursiva de campos sensibles (`password`, `secret`, `token`, `database_url`, `admin_key`, `contrasena`) en las respuestas de la API pública.  

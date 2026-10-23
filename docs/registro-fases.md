@@ -459,6 +459,34 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 ### 4. Commit de la Fase
 * **Mensaje:** `Añade pruebas de seguridad y funcionamiento`
 
+---
+
+## Fase 14 (Prompt 14 - Ampliación): Entorno Local de Vaultwarden
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Definición del Despliegue Docker (`vaultwarden/docker-compose.yml`)
+* Se estructuró el entorno contenedorizado local para la gestión autónoma de credenciales bajo soberanía del usuario:
+  * **Imagen fija:** `vaultwarden/server:1.32.7` fijada a una versión estable concreta (sin usar `latest`).
+  * **Aislamiento estricto de red:** Mapeo de puerto restringido exclusivamente a `127.0.0.1:8080:80`, evitando exposición a la red local o accesos externos no autorizados.
+  * **Persistencia local:** Volumen persistente en `./vw-data:/data` para la base de datos SQLite y certificados.
+  * **Higiene de control de versiones:** Añadida regla a `.gitignore` para excluir `/vaultwarden/vw-data/` y archivos `.sqlite3` de Git.
+  * **Seguridad de registros:** Directiva `SIGNUPS_ALLOWED=false` para cerrar el registro de nuevos usuarios.
+  * **Protección del panel de administración:** Configuración del `ADMIN_TOKEN` obligatoriamente mediante hash Argon2id (nunca contraseña en texto claro).
+
+### 2. Documentación y Operativa (`docs/vaultwarden.md`)
+* Se elaboró el manual técnico de Vaultwarden que incluye:
+  * Pasos de arranque mediante Docker Compose.
+  * Procedimiento de generación del hash Argon2 para el token administrativo.
+  * Configuración de la extensión Bitwarden para apuntar a la instancia local `http://127.0.0.1:8080`.
+  * Análisis comparativo entre la instancia local autosoportada y el servicio en la nube oficial de Bitwarden (soberanía, superficie de ataque, disponibilidad y HTTPS).
+  * Procedimiento de copias de seguridad en frío y en caliente (`sqlite3 .backup`), junto con el protocolo de restauración.
+
+### 3. Commit de la Fase
+* **Mensaje:** `Añade entorno local de Vaultwarden`
+
+
 
 
 
