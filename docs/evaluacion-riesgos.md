@@ -39,6 +39,22 @@ Los valores resultantes (rango 1 a 9) se clasifican en los siguientes umbrales:
 * **Medio (3 a 4):** Puntuaciones 3 y 4. Requiere planificación de medidas correctoras en el corto-medio plazo.
 * **Alto (6 a 9):** Puntuaciones 6 y 9 (no existe valor 5 ni 7/8 dada la matriz de $1..3 \times 1..3$). Requiere atención prioritaria e implantación urgente de medidas de protección.
 
+### 4.1. Las Nueve Combinaciones de Probabilidad e Impacto (Prompt 8)
+
+Calculadas unívocamente por la función de servidor (`lib/calculoRiesgo.ts`):
+
+| Combinación | Probabilidad ($P$) | Impacto ($I$) | Puntuación ($P \times I$) | Nivel Asignado | Categoría de Acción |
+| :---: | :---: | :---: | :---: | :---: | :--- |
+| **1** | 1 (Baja) | 1 (Menor) | **1** | 🟢 **Bajo** | Asumible / Supervisión ordinaria |
+| **2** | 1 (Baja) | 2 (Significativo) | **2** | 🟢 **Bajo** | Asumible / Supervisión ordinaria |
+| **3** | 1 (Baja) | 3 (Grave) | **3** | 🟡 **Medio** | Mitigación planificada |
+| **4** | 2 (Media) | 1 (Menor) | **2** | 🟢 **Bajo** | Asumible / Supervisión ordinaria |
+| **5** | 2 (Media) | 2 (Significativo) | **4** | 🟡 **Medio** | Mitigación planificada |
+| **6** | 2 (Media) | 3 (Grave) | **6** | 🔴 **Alto** | Atención prioritaria e inmediata |
+| **7** | 3 (Alta) | 1 (Menor) | **3** | 🟡 **Medio** | Mitigación planificada |
+| **8** | 3 (Alta) | 2 (Significativo) | **6** | 🔴 **Alto** | Atención prioritaria e inmediata |
+| **9** | 3 (Alta) | 3 (Grave) | **9** | 🔴 **Alto** | Atención prioritaria e inmediata |
+
 ---
 
 ## 5. Reglas Metodológicas del Ejercicio

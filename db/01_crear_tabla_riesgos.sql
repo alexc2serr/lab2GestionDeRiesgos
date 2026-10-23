@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS riesgos (
     -- Medidas de Protección y Control
     medida TEXT NOT NULL,
     prioridad VARCHAR(20) NOT NULL CHECK (prioridad IN ('Baja', 'Media', 'Alta')),
+    efecto_esperado TEXT,
     comprobacion_eficacia TEXT NOT NULL,
     estado_medida VARCHAR(20) NOT NULL DEFAULT 'propuesta' CHECK (estado_medida IN ('propuesta', 'implantada', 'verificada')),
     referencia_control VARCHAR(120),

@@ -117,6 +117,12 @@ export const RiesgoSchema = z.object({
     }),
   }),
 
+  efectoEsperado: z
+    .string()
+    .max(300, "El efecto esperado no puede superar los 300 caracteres")
+    .transform(sanitizarTextoPlano)
+    .optional(),
+
   comprobacionEficacia: z
     .string({ required_error: "La comprobación de eficacia es obligatoria" })
     .min(5, "La comprobación de eficacia debe tener al menos 5 caracteres")
@@ -154,6 +160,7 @@ export const RiesgoModificacionSchema = z.object({
   justificacionImpacto: z.string().min(5).max(300).transform(sanitizarTextoPlano).optional(),
   medida: z.string().min(5).max(250).transform(sanitizarTextoPlano).optional(),
   prioridad: z.enum(["Baja", "Media", "Alta"]).optional(),
+  efectoEsperado: z.string().max(300).transform(sanitizarTextoPlano).optional(),
   comprobacionEficacia: z.string().min(5).max(300).transform(sanitizarTextoPlano).optional(),
   estadoMedida: z.enum(["propuesta", "implantada", "verificada"]).optional(),
   referenciaControl: z.string().max(120).transform(sanitizarTextoPlano).optional(),

@@ -81,12 +81,11 @@ export default function PanelDireccion({ riesgos }: Props) {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
-                <th className="py-2.5 px-3 font-semibold">Identificador</th>
-                <th className="py-2.5 px-3 font-semibold">¿Qué puede ocurrir?</th>
-                <th className="py-2.5 px-3 font-semibold">Impacto en el Negocio</th>
-                <th className="py-2.5 px-3 font-semibold">Nivel</th>
-                <th className="py-2.5 px-3 font-semibold">Medida Recomendada</th>
-                <th className="py-2.5 px-3 font-semibold">Prioridad</th>
+                <th className="py-2.5 px-3 font-semibold w-16">ID</th>
+                <th className="py-2.5 px-3 font-semibold">Riesgo en una Frase</th>
+                <th className="py-2.5 px-3 font-semibold w-28">Nivel</th>
+                <th className="py-2.5 px-3 font-semibold">Objetivo Afectado</th>
+                <th className="py-2.5 px-3 font-semibold">Medida Prioritaria</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -95,15 +94,13 @@ export default function PanelDireccion({ riesgos }: Props) {
                   <td className="py-3 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
                     {r.id}
                   </td>
-                  <td className="py-3 px-3 text-slate-800 max-w-xs">
-                    <span className="font-semibold text-slate-900">{r.amenaza}:</span> {r.evento}.
-                  </td>
-                  <td className="py-3 px-3 text-slate-600 max-w-xs">
-                    {r.consecuencia} (afecta al objetivo de <em>{r.objetivo}</em>).
+                  <td className="py-3 px-3 text-slate-800 leading-relaxed">
+                    Debido a <strong className="text-slate-900">{r.condicion}</strong>,{" "}
+                    {r.amenaza} sobre <em>{r.activo}</em>, causando {r.consecuencia}.
                   </td>
                   <td className="py-3 px-3 whitespace-nowrap">
                     <span
-                      className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
+                      className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold ${
                         r.nivel === "Alto"
                           ? "bg-rose-100 text-rose-800 border border-rose-200"
                           : r.nivel === "Medio"
@@ -114,13 +111,24 @@ export default function PanelDireccion({ riesgos }: Props) {
                       {r.nivel} ({r.puntuacion})
                     </span>
                   </td>
-                  <td className="py-3 px-3 text-slate-700 max-w-sm">
-                    {r.medida}
+                  <td className="py-3 px-3 text-indigo-900 font-medium">
+                    {r.objetivo}
                   </td>
-                  <td className="py-3 px-3 whitespace-nowrap font-semibold">
-                    <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 text-[11px]">
-                      {r.prioridad}
-                    </span>
+                  <td className="py-3 px-3 text-slate-700 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-slate-900">{r.medida}</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
+                        {r.prioridad}
+                      </span>
+                    </div>
+                    {r.efectoEsperado && (
+                      <p className="text-[11px] text-slate-500 italic">
+                        Efecto esperado: {r.efectoEsperado}
+                      </p>
+                    )}
+                    <div className="text-[10px] text-slate-400">
+                      Estado: <span className="capitalize font-medium text-slate-600">{r.estadoMedida || "propuesta"}</span>
+                    </div>
                   </td>
                 </tr>
               ))}

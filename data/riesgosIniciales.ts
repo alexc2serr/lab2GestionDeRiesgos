@@ -22,6 +22,8 @@ export const RIESGOS_INICIALES: Riesgo[] = [
     medida:
       "Implantar un protocolo automatizado de pruebas periódicas de restauración de copias de seguridad en un entorno de contingencia aislado con verificación de integridad criptográfica (checksums SHA-256).",
     prioridad: "Alta",
+    efectoEsperado:
+      "Garantizar la recuperabilidad íntegra de la base de datos de matrículas en un tiempo RTO < 4 horas y RPO < 1 hora, preservando los registros durante al menos 5 años.",
     comprobacionEficacia:
       "Simular una contingencia restaurando el último backup en un servidor de pruebas y verificar mediante script automatizado que el 100% de los registros de alumnos se recuperan íntegros y accesibles en menos de 2 horas.",
     estadoMedida: "propuesta",
@@ -50,6 +52,8 @@ export const RIESGOS_INICIALES: Riesgo[] = [
     medida:
       "Aplicar el principio de mínimo privilegio (Least Privilege) creando un usuario de base de datos específico para la aplicación web con permisos estrictamente DML (SELECT, INSERT, UPDATE en tablas necesarias) y revocando de forma absoluta cualquier permiso DDL (DROP, ALTER, CREATE) o privilegios administrativos.",
     prioridad: "Alta",
+    efectoEsperado:
+      "Contener y neutralizar cualquier ataque de inyección SQL o fallo humano, impidiendo la alteración o borrado catastrófico del esquema y las tablas de datos.",
     comprobacionEficacia:
       "Ejecutar una prueba técnica de penetración controlada intentando lanzar sentencias 'DROP TABLE matriculas;' y 'ALTER TABLE...' autenticado como el usuario de la app, constatando que el motor de base de datos deniega la operación con error 'permission denied' (cumplimiento SEG-04).",
     estadoMedida: "propuesta",

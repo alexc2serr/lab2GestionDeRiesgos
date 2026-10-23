@@ -19,6 +19,7 @@ import {
   ProbabilidadValor,
   ImpactoValor,
   PrioridadMedida,
+  EstadoMedida,
   calcularNivelRiesgo,
 } from "@/types/riesgo";
 
@@ -43,7 +44,9 @@ export interface RiesgoFormState {
   justificacionImpacto: string;
   medida: string;
   prioridad: PrioridadMedida;
+  efectoEsperado: string;
   comprobacionEficacia: string;
+  estadoMedida: EstadoMedida;
 }
 
 const ESTADO_INICIAL: RiesgoFormState = {
@@ -61,7 +64,9 @@ const ESTADO_INICIAL: RiesgoFormState = {
   justificacionImpacto: "",
   medida: "",
   prioridad: "Alta",
+  efectoEsperado: "",
   comprobacionEficacia: "",
+  estadoMedida: "propuesta",
 };
 
 const EJEMPLO_ACADEMICO: RiesgoFormState = {
@@ -82,8 +87,11 @@ const EJEMPLO_ACADEMICO: RiesgoFormState = {
   medida:
     "Protocolo de pruebas periódicas de restauración de copias de seguridad en contingencia con verificación de checksums.",
   prioridad: "Alta",
+  efectoEsperado:
+    "Garantizar la recuperabilidad íntegra de la base de datos de matrículas en un tiempo RTO < 4 horas y RPO < 1 hora.",
   comprobacionEficacia:
     "Simular recuperación completa desde el último backup en entorno de prueba y constatar que el 100% de los datos son legibles.",
+  estadoMedida: "propuesta",
 };
 
 export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [] }: Props) {
@@ -169,8 +177,9 @@ export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [
         nivel,
         medida: formData.medida.trim(),
         prioridad: formData.prioridad,
+        efectoEsperado: formData.efectoEsperado.trim() || undefined,
         comprobacionEficacia: formData.comprobacionEficacia.trim(),
-        estadoMedida: "propuesta",
+        estadoMedida: formData.estadoMedida || "propuesta",
         fechaCreacion: new Date().toISOString(),
         fechaModificacion: new Date().toISOString(),
       };
@@ -464,6 +473,15 @@ export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [
                   <option value={3}>3 - Alta</option>
                 </select>
               </div>
+
+              {/* Descriptor visible de probabilidad */}
+              <div className="text-[11px] bg-slate-50 border border-slate-200 p-2 rounded text-slate-600">
+                <span className="font-semibold text-slate-800">Descriptor activo: </span>
+                {formData.probabilidad === 1 && "Existen razones justificadas para considerar poco probable el evento."}
+                {formData.probabilidad === 2 && "El evento es plausible y las condiciones disponibles no permiten considerarlo poco probable."}
+                {formData.probabilidad === 3 && "Hay indicios concretos de que el evento es probable durante la campaña."}
+              </div>
+
               <textarea
                 id="justificacionProbabilidad"
                 rows={2}
@@ -497,6 +515,15 @@ export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [
                   <option value={3}>3 - Grave</option>
                 </select>
               </div>
+
+              {/* Descriptor visible de impacto */}
+              <div className="text-[11px] bg-slate-50 border border-slate-200 p-2 rounded text-slate-600">
+                <span className="font-semibold text-slate-800">Descriptor activo: </span>
+                {formData.impacto === 1 && "Incidencia limitada, sin comprometer el plazo ni perder registros confirmados."}
+                {formData.impacto === 2 && "Interrupción o trabajo de recuperación relevante, pero el objetivo todavía puede alcanzarse."}
+                {formData.impacto === 3 && "Impide completar solicitudes en plazo o provoca pérdida no recuperable de registros confirmados."}
+              </div>
+
               <textarea
                 id="justificacionImpacto"
                 rows={2}
@@ -510,6 +537,13 @@ export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [
                 Explicar afectación al plazo de 7 días o pérdida de registros confirmados (máx. 300 car.).
               </span>
             </div>
+          </div>
+
+          <div className="bg-sky-50 p-2.5 rounded text-[11px] text-sky-900 border border-sky-200 flex items-center gap-2">
+            <HelpCircle className="w-4 h-4 text-sky-600 shrink-0" />
+            <span>
+              <strong>Regla metodológica:</strong> La falta de información se registra como supuesto o información pendiente; nunca se convierte automáticamente en probabilidad alta.
+            </span>
           </div>
 
           {/* Resultado de la Puntuación */}
@@ -540,7 +574,7 @@ export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [
           </legend>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-2">
               <label htmlFor="medida" className="block text-xs font-semibold text-slate-700 mb-1">
                 Medida concreta recomendada <span className="text-rose-500">*</span>
               </label>
@@ -570,6 +604,37 @@ export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [
                 <option value="Baja">Baja</option>
               </select>
             </div>
+
+            <div>
+              <label htmlFor="estadoMedida" className="block text-xs font-semibold text-slate-700 mb-1">
+                Estado de la Medida <span className="text-rose-500">*</span>
+              </label>
+              <select
+                id="estadoMedida"
+                value={formData.estadoMedida}
+                onChange={(e) => handleChange("estadoMedida", e.target.value as EstadoMedida)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-semibold"
+              >
+                <option value="propuesta">Propuesta</option>
+                <option value="implantada">Implantada</option>
+                <option value="verificada">Verificada</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="efectoEsperado" className="block text-xs font-semibold text-slate-700 mb-1">
+              Efecto esperado tras implantar la medida <span className="text-rose-500">*</span>
+            </label>
+            <input
+              id="efectoEsperado"
+              type="text"
+              maxLength={250}
+              value={formData.efectoEsperado}
+              onChange={(e) => handleChange("efectoEsperado", e.target.value)}
+              placeholder="Ej. Reducir el tiempo de recuperación RTO a menos de 2 horas y asegurar RPO < 1 hora..."
+              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+            />
           </div>
 
           <div>
@@ -591,7 +656,7 @@ export default function FormularioRiesgo({ onGuardarRiesgo, riesgosGuardados = [
           </div>
 
           <div className="bg-amber-50 p-2.5 rounded text-[11px] text-amber-800 border border-amber-200 italic">
-            * Recordatorio: Una medida propuesta no reduce automáticamente el riesgo hasta ser implantada y verificada.
+            * Recordatorio didáctico: Una medida propuesta NO reduce automáticamente la valoración del riesgo hasta ser implantada y verificada.
           </div>
         </fieldset>
       </form>

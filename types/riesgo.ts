@@ -33,6 +33,7 @@ export interface Riesgo {
   // Medida de Protección
   medida: string;
   prioridad: PrioridadMedida;
+  efectoEsperado?: string; // Efecto que se espera lograr tras implantar la salvaguarda
   comprobacionEficacia: string;
   estadoMedida: EstadoMedida; // propuesta | implantada | verificada
   referenciaControl?: string; // ENS / NIST SP 800-53
@@ -42,16 +43,5 @@ export interface Riesgo {
   fechaModificacion: string;
 }
 
-export function calcularNivelRiesgo(p: ProbabilidadValor, i: ImpactoValor): { puntuacion: number; nivel: NivelRiesgo } {
-  const puntuacion = p * i;
-  let nivel: NivelRiesgo = "Bajo";
-  if (puntuacion >= 6) {
-    nivel = "Alto";
-  } else if (puntuacion >= 3) {
-    nivel = "Medio";
-  } else {
-    nivel = "Bajo";
-  }
-  return { puntuacion, nivel };
-}
+export { calcularNivelRiesgoServidor as calcularNivelRiesgo } from "@/lib/calculoRiesgo";
 

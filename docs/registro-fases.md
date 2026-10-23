@@ -327,5 +327,31 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 ### 4. Commit de la Fase
 * **Mensaje:** `Añade persistencia de riesgos`
 
+---
+
+## Fase 9 (Prompt 8): Evaluación, Nivel y Medidas en Servidor
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Cálculo Server-Side Único y Probado (`lib/calculoRiesgo.ts`)
+* Se implementó la función canónica de servidor `calcularNivelRiesgoServidor(p, i)` como única fuente de verdad para el cálculo de la puntuación ($P \times I$) y el nivel (Bajo 1-2, Medio 3-4, Alto 6-9).
+* El navegador nunca calcula unilateralmente el nivel: se limita a consumir y renderizar la respuesta calculada por el backend en las operaciones de creación y modificación (`POST` y `PUT /api/riesgos`).
+* Se verificaron y documentaron las **nueve combinaciones posibles de probabilidad e impacto** con su severidad correspondiente.
+
+### 2. Formulario y Descriptores Visibles
+* **Probabilidad (1..3) e Impacto (1..3):** Con descriptores visibles interactivos en la interfaz y justificación cualitativa obligatoria.
+* **Tratamiento de la Incertidumbre:** Recordatorio metodológico visible de que la falta de información se cataloga como supuesto o información pendiente, sin elevar automáticamente el nivel a alto.
+* **Campos de Medida Ampliados:** Medida concreta, prioridad (`Baja`, `Media`, `Alta`), efecto esperado tras la implantación, procedimiento de comprobación técnica de eficacia y estado del ciclo de vida (`propuesta`, `implantada`, `verificada`).
+* **Principio de No Reducción Automática:** Aviso explícito de que una medida propuesta no reduce la valoración del riesgo hasta ser implantada y verificada.
+
+### 3. Doble Perspectiva Especializada
+* **Resumen para Dirección (`components/PanelDireccion.tsx`):** Tabla ejecutiva con las 4 columnas canónicas solicitadas: Riesgo en una frase, Nivel de severidad, Objetivo afectado y Medida prioritaria con su efecto esperado y estado.
+* **Detalle Técnico (`components/PanelTecnico.tsx`):** Desglose exhaustivo con matrices de control, pruebas de eficacia técnica, referencias normativas (ENS / NIST) y supuestos registrados.
+
+### 4. Commit de la Fase
+* **Mensaje:** `Añade evaluación y medidas`
+
+
 
 

@@ -125,16 +125,26 @@ export default function PanelTecnico({ riesgos }: Props) {
                         {r.referenciaControl}
                       </span>
                     )}
+                    <span className="text-[11px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-300 capitalize">
+                      Estado: {r.estadoMedida || "propuesta"}
+                    </span>
                     <span className="text-[11px] font-bold text-rose-800 bg-rose-100 px-2 py-0.5 rounded border border-rose-200">
                       Prioridad: {r.prioridad}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-xs text-slate-800">
+                <div className="text-xs text-slate-800 space-y-1">
                   <strong className="text-slate-900 block mb-0.5">Descripción de la medida:</strong>
-                  {r.medida}
+                  <p>{r.medida}</p>
                 </div>
+
+                {r.efectoEsperado && (
+                  <div className="text-xs text-slate-700 bg-emerald-50/50 p-2.5 rounded border border-emerald-200 space-y-0.5">
+                    <strong className="text-emerald-950 block">Efecto esperado:</strong>
+                    <p className="text-emerald-900">{r.efectoEsperado}</p>
+                  </div>
+                )}
 
                 <div className="text-xs text-slate-700 bg-white p-3 rounded border border-indigo-100 space-y-1">
                   <strong className="text-indigo-950 flex items-center gap-1">

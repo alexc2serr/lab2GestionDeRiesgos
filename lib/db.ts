@@ -75,6 +75,7 @@ function rowToRiesgo(row: any): Riesgo {
     nivel: row.nivel,
     medida: row.medida,
     prioridad: row.prioridad,
+    efectoEsperado: row.efecto_esperado || "",
     comprobacionEficacia: row.comprobacion_eficacia,
     estadoMedida: row.estado_medida || "propuesta",
     referenciaControl: row.referencia_control || "",
