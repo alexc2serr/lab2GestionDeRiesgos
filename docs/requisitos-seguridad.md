@@ -67,16 +67,37 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
 ---
 
 ### SEG-05: Validación de entradas en el servidor
-* **Finalidad:** Prevenir ataques por inyección (SQLi, XSS), estados inconsistentes o desbordamientos mediante la verificación estricta de todas las entradas procedentes del cliente.
+* **Finalidad:** Prevenir ataques por inyección (SQLi, XSS), estados inconsistentes o desbordamientos mediante la verificación estricta de todas las entradas procedentes del cliente en el backend.
 * **Referencia normativa:**
   * ENS Anexo II: `mp.sw.1` (Desarrollo y adquisición de software seguro).
   * NIST SP 800-53 Rev. 5: `SI-10` (Information Input Validation).
-* **Implementación prevista:**
-  * Validación server-side con esquemas **Zod** (verificación de tipos de datos, longitudes mínimas/máximas y valores permitidos en rangos 1..3).
-  * Tratamiento de entradas textuales como cadenas de texto plano, sin renderizado como HTML inseguro.
-* **Prueba de aceptación:** Envío de payloads con campos ausentes, longitudes fuera de rango (ej. >500 caracteres), o valores de probabilidad/impacto inválidos (ej. 0 o 5).
-* **Evidencia esperada:** Respuesta HTTP 400 Bad Request con detalle de validación estructurado sin procesar la petición.
-* **Estado:** `Cumplido` (Verificado: Esquema Zod en `lib/validaciones.ts` y en `app/api/riesgos/route.ts`; verificado en `npm test` con rechazo de payloads erróneos).
+* **Implementación técnica:**
+  * Validación server-side mediante esquemas **Zod** (`RiesgoSchema` y `RiesgoModificacionSchema` en `lib/validaciones.ts`) ejecutada en `POST /api/riesgos` y `PUT /api/riesgos`.
+  * **Catálogos cerrados (Enums):**
+    * `activo`: exclusivamente `'plataforma web'`, `'base de datos'` o `'copias de seguridad'`.
+    * `objetivo`: exclusivamente `'completar solicitudes en plazo'` o `'conservar y recuperar registros'`.
+    * `probabilidad`: enteros restringidos al conjunto didáctico `[1, 2, 3]`.
+    * `impacto`: enteros restringidos al conjunto didáctico `[1, 2, 3]`.
+    * `prioridad`: `'Baja'`, `'Media'` o `'Alta'`.
+    * `estadoMedida`: `'propuesta'`, `'implantada'` o `'verificada'`.
+  * **Límites de longitud y obligatoriedad:**
+    * `proceso`: 2 a 80 caracteres.
+    * `condicion`: 5 a 200 caracteres.
+    * `amenaza`: 3 a 150 caracteres.
+    * `evento`: 5 a 200 caracteres.
+    * `consecuencia`: 5 a 250 caracteres.
+    * `justificacionProbabilidad` y `justificacionImpacto`: 5 a 300 caracteres.
+    * `medida`: 5 a 250 caracteres.
+    * `efectoEsperado` y `comprobacionEficacia`: 5 a 300 caracteres.
+  * **Tratamiento como texto plano:** Función de transformación `sanitizarTextoPlano` que purga caracteres `<` y `>` y recorta espacios en blanco, combinada con el renderizado nativo de React que escapa entidades HTML por defecto.
+* **Prueba de aceptación:**
+  1. Envío de payloads con campos ausentes requeridos (rechazo inmediato).
+  2. Envío de probabilidad 5 o impacto 0 (rechazo por rango didáctico no admitido).
+  3. Envío de activo no contemplado en el catálogo formal (rechazo por valor inválido).
+  4. Envío de campos sobredimensionados (ej. `proceso` con 150 caracteres).
+  5. Inserción de payloads con etiquetas HTML/script (sanitización a texto plano).
+* **Evidencia esperada:** Respuesta HTTP 400 Bad Request con estructura JSON limpia detallando los campos erróneos sin procesar la mutación.
+* **Estado:** `Cumplido` (Verificado: Validación en servidor activa en `lib/validaciones.ts` y probada en `scripts/test-seguridad.ts` con 5/5 casos de prueba pasados).
 
 ---
 
@@ -94,15 +115,21 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
 ---
 
 ### SEG-07: Errores públicos sin credenciales ni detalles internos sensibles
-* **Finalidad:** Evitar la fuga de información técnica sensible (stack traces, rutas absolutas del servidor, nombres de tablas o versiones de software) en respuestas de error.
+* **Finalidad:** Evitar la fuga de información técnica sensible (stack traces, consultas SQL, cadenas de conexión, rutas absolutas del servidor o versiones) en respuestas de error.
 * **Referencia normativa:**
   * NIST SP 800-53 Rev. 5: `SI-10` (Information Input Validation / Error Handling).
-* **Implementación prevista:**
-  * Bloques `try/catch` globales en API Routes y Server Actions con formateo de errores genéricos para el usuario final.
-  * Ocultación de stack traces cuando el entorno sea diferente de `development`.
-* **Prueba de aceptación:** Provocación forzada de un error interno y análisis del cuerpo de respuesta HTTP devuelto.
-* **Evidencia esperada:** Mensaje controlado (ej. `{"error": "No ha sido posible procesar la solicitud. Inténtelo más tarde."}`) con código HTTP 500, sin trazas técnicas ni cadenas de conexión.
-* **Estado:** `Cumplido` (Verificado: Manejadores try/catch en todas las rutas API con respuestas sanitizadas).
+* **Implementación técnica:**
+  * Envoltorio global de bloques `try/catch` en todos los Route Handlers (`app/api/riesgos`, `app/api/auth/login`, `app/api/auth/logout`, `app/api/auth/sesion`).
+  * En caso de excepción no controlada, el backend captura el fallo, registra un log operacional controlado en servidor (`console.error` con descripción sucinta sin credenciales ni variables de entorno) y responde al cliente con **HTTP 500** y un mensaje genérico inofensivo:
+    ```json
+    { "error": "Error interno del servidor al procesar el riesgo. No se alteró ningún dato." }
+    ```
+  * En ningún caso se envían `stack`, rutas de disco de Windows/Linux ni sentencias SQL completas al navegador.
+* **Prueba de aceptación:**
+  1. Envío forzado de JSON malformado a `POST /api/riesgos` (devuelve HTTP 400 sin filtrar trazas).
+  2. Provocación de fallo de conexión a base de datos (devuelve mensaje estándar HTTP 500 sin exponer la URI `DATABASE_URL`).
+* **Evidencia esperada:** Respuestas HTTP limpias sin stack traces, rutas ni tokens, verificables en la pestaña Network de DevTools.
+* **Estado:** `Cumplido` (Verificado: Handlers protegidos en todas las rutas de `app/api/` y respuestas de error sanitizadas).
 
 ---
 

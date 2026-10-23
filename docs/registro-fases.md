@@ -382,6 +382,36 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 ### 5. Commit de la Fase
 * **Mensaje:** `Protege acceso y escrituras`
 
+---
+
+## Fase 11 (Prompt 10): Validación de Entradas y Control de Errores
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Validación Server-Side Exhaustiva (`lib/validaciones.ts`)
+* Se completó la validación estricta de todos los campos del modelo relacional con esquemas Zod (`RiesgoSchema` y `RiesgoModificacionSchema`), validando:
+  * **Tipos y obligatoriedad:** Rechazo de tipos incorrectos, valores nulos o campos vacíos en campos obligatorios.
+  * **Longitudes máximas:** Acotadas para evitar desbordamientos de memoria (`proceso` máx. 80, `condicion`/`evento` máx. 200, `amenaza` máx. 150, `consecuencia`/`medida` máx. 250, justificaciones y comprobaciones máx. 300).
+  * **Enums cerrados:** Activos permitidos (`plataforma web`, `base de datos`, `copias de seguridad`), objetivos permitidos, probabilidad (1..3), impacto (1..3), prioridad (`Baja`, `Media`, `Alta`) y estado de la medida (`propuesta`, `implantada`, `verificada`).
+* Mensajes de error claros y estructurados: En caso de fallo de validación, la API responde con `HTTP 400 Bad Request` listando campo a campo el motivo del rechazo.
+
+### 2. Tratamiento como Texto Plano y Prevención de Inyecciones
+* Todas las entradas textuales son procesadas por la función de transformación `sanitizarTextoPlano`, que elimina etiquetas HTML/scripts potencialmente peligrosos antes de guardarse.
+* En el frontend, React escapa todas las cadenas por defecto, impidiendo la interpretación de HTML o ataques de Cross-Site Scripting (XSS).
+
+### 3. Control y Sanitización de Errores Públicos (SEG-07 / NIST SI-10)
+* Envoltura integral de todos los Route Handlers en bloques `try/catch`.
+* Las respuestas de error del servidor nunca incluyen trazas de ejecución (*stack traces*), sentencias SQL completas, rutas absolutas de ficheros ni cadenas de conexión con credenciales.
+* Registro de errores operacionales exclusivamente en los logs del servidor para diagnóstico, libres de secretos.
+
+### 4. Actualización Documental
+* Se actualizaron en [`docs/requisitos-seguridad.md`](file:///docs/requisitos-seguridad.md) las fichas formales de **SEG-05** y **SEG-07** con su implementación técnica, pruebas de aceptación y evidencias esperadas.
+
+### 5. Commit de la Fase
+* **Mensaje:** `Valida entradas y controla errores`
+
+
 
 
 
