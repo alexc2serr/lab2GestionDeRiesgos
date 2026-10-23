@@ -411,6 +411,31 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 ### 5. Commit de la Fase
 * **Mensaje:** `Valida entradas y controla errores`
 
+---
+
+## Fase 12 (Prompt 11): Entornos Separados y Gestión de Secretos
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Separación Rigurosa de Entornos (SEG-06 / ENS op.exp.2)
+* **Entorno Local (Desarrollo):** Configurado a través de `.env.local` (excluido de Git), utilizando ramas de desarrollo o instancias locales de base de datos y credencial de administración para migraciones (`DATABASE_URL_ADMIN`).
+* **Entorno Preview (Vercel):** Variables configuradas exclusivamente para el ámbito **Preview** en el panel de Vercel. Despliegues de preproducción aislados sin emplear la bandera `--prod`.
+* **Ramas en Neon PostgreSQL:** Documentado el funcionamiento de las ramas independientes de Neon basadas en *copy-on-write*, que permiten que cada despliegue de Preview opere sobre una instantánea de datos aislada sin poner en riesgo la base de datos de desarrollo.
+
+### 2. Documentación Integral de Secretos (`docs/gestion-secretos.md`)
+* Se elaboró la guía completa de inventario de secretos técnicos sin exponer valores reales:
+  * Finalidad, ámbito de entorno y nivel de privilegio de `DATABASE_URL`, `DATABASE_URL_ADMIN`, `SESSION_SECRET`, `GESTOR_PASSWORD_HASH` y `ADMIN_API_KEY`.
+  * Custodia soberana en **Bitwarden** bajo política Zero-Knowledge.
+  * Protocolo de rotación y revocación inmediata ante una eventual exposición accidental.
+
+### 3. Registro de Incidencias (`docs/incidencias.md`)
+* Se creó el documento formal `docs/incidencias.md` para dar cumplimiento a la directriz de auditoría de la asignatura, certificando actualmente 0 incidentes y repositorio 100% limpio.
+
+### 4. Commit de la Fase
+* **Mensaje:** `Separa entornos y documenta secretos`
+
+
 
 
 
