@@ -486,6 +486,33 @@ En estricto cumplimiento de las normas de realización (*"Conservad una decisió
 ### 3. Commit de la Fase
 * **Mensaje:** `Añade entorno local de Vaultwarden`
 
+---
+
+## Fase 15 (Prompt 13): Preparación de la Entrega Final del Laboratorio 2
+* **Fecha de ejecución:** 23 de octubre de 2026.
+* **Rama de trabajo:** `gemini`.
+* **Estado:** Completada.
+
+### 1. Consolidación del Registro del Grupo (`docs/registro-grupo.md`)
+* Se redactó el documento formal de auditoría del grupo de trabajo:
+  * Identificación del miembro responsable (Alejandro Serrano Calvo).
+  * Matriz detallada de asignación de tareas con referencias unívocas a los commits de cada fase en GitHub.
+  * Análisis de tres decisiones técnicas propuestas por la IA que fueron revisadas, corregidas o descartadas por el alumno (eliminación de `bcrypt` binario por PBKDF2 nativo, resolución de strip types con `tsx` para preservar Next.js build y ajuste de regex para evitar falsos positivos de secretos).
+  * Respuesta exhaustiva y razonada a la pregunta de cierre para la Dirección, fundamentada en los datos del caso de Academia Horizonte y el ciclo de vida de las medidas de protección.
+
+### 2. Verificación de Despliegue en Vercel (`docs/despliegue.md`)
+* Se comprobó la URL pública de previsualización en el entorno **Preview** (`https://laboratorio2-riesgos-lrqfdos3h-usj6.vercel.app`), certificando la ausencia de `--prod`, la ausencia de credenciales en query strings o bundles y la presencia visible de los tres textos obligatorios.
+
+### 3. Actualización de Requisitos de Seguridad (`docs/requisitos-seguridad.md`)
+* Se validaron y marcaron como **Cumplido** los ocho requisitos de seguridad técnicos (**SEG-01** a **SEG-08**), vinculando cada uno a su prueba de aceptación automatizada o evidencia documental.
+
+### 4. Etiquetado Git Oficial
+* Creación de la etiqueta Git oficial: `entrega-l2` apuntando al commit de entrega final.
+
+### 5. Commit de la Fase
+* **Mensaje:** `Prepara la entrega del laboratorio 2`
+
+
 
 
 

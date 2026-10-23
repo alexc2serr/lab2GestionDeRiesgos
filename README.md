@@ -40,6 +40,7 @@ El sistema permite:
 * **[Registro de Fases y Evidencias](file:///docs/registro-fases.md):** Bitácora cronológica con el detalle de tareas completadas, decisiones y commits de cada etapa del laboratorio.
 * **[Batería de Pruebas de Seguridad y Funcionamiento](file:///docs/pruebas.md):** Reporte de verificación automatizada de los 5 casos obligatorios (clasificación, validación, persistencia, 401 y ausencia de secretos).
 * **[Guía de Despliegue de Vaultwarden Local](file:///docs/vaultwarden.md):** Instrucciones de ejecución de Vaultwarden mediante Docker Compose, configuración con Bitwarden y protocolo de copias de seguridad.
+* **[Registro del Grupo y Decisiones Técnicas](file:///docs/registro-grupo.md):** Identificación del grupo, desglose de commits, decisiones técnicas revisadas de la IA y respuesta razonada a la pregunta de cierre para la dirección.
 * **[Registro de Incidencias](file:///docs/incidencias.md):** Control de incidentes de seguridad y protocolo de declaración obligatoria.
 
 ---

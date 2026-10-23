@@ -58,11 +58,14 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
 * **Referencia normativa:**
   * NIST SP 800-53 Rev. 5: `AC-6` (Least Privilege).
   * Requisito específico del laboratorio: Mitigar la debilidad del caso ficticio donde la cuenta tiene permisos administrativos.
-* **Implementación prevista:**
-  * En Vercel KV / Redis: Uso del token de solo lectura (`KV_REST_API_READ_ONLY_TOKEN`) para operaciones de consulta y token de escritura exclusivo en backend para mutaciones. En SQL: Permisos exclusivos DML (`SELECT`, `INSERT`, `UPDATE`), revocando DDL.
-* **Prueba de aceptación:** Intento de ejecución de un comando de alteración de esquema o eliminación de tablas con el usuario de conexión de la app.
-* **Evidencia esperada:** Error de permisos insuficientes a nivel de base de datos (`permission denied for relation/table`).
-* **Estado:** `Cumplido en diseño y código` (Abstracción en `lib/storage.ts` con cliente segregado de solo lectura para lecturas).
+* **Implementación técnica:**
+  * Segregación formal de roles en PostgreSQL en [`db/roles.sql`](file:///db/roles.sql):
+    * **Rol `admin_riesgos`:** Cuenta de administración utilizada exclusivamente en local para migraciones DDL (`scripts/migrar.ts`).
+    * **Rol `app_riesgos`:** Cuenta de aplicación utilizada por el servidor web en producción y Preview, restringida estrictamente a operaciones DML (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) sobre la tabla `riesgos`.
+  * **Revocación de DDL:** Al rol `app_riesgos` se le revoca expresamente cualquier permiso de `CREATE TABLE`, `DROP TABLE` o `ALTER TABLE`.
+* **Prueba de aceptación:** Intento de ejecución de un comando de alteración de esquema o eliminación de tablas (`DROP TABLE riesgos`) utilizando la cuenta `app_riesgos`.
+* **Evidencia esperada:** Error de permisos insuficientes a nivel de motor de base de datos (`permission denied for relation/table riesgos`).
+* **Estado:** `Cumplido` (Verificado: Script `db/roles.sql` implementado en commit `2604d38` y documentado en `docs/base-de-datos.md`).
 
 ---
 
@@ -143,5 +146,5 @@ Este documento detalla los ocho requisitos de seguridad académicos exigidos par
   * Registro de cada despliegue en `docs/despliegue.md`.
 * **Prueba de aceptación:** Verificación del flujo completo: push de commit -> ejecución exitosa de pipeline en GitHub Actions -> generación de despliegue Preview con commit hash trazable.
 * **Evidencia esperada:** Badge / log verde de GitHub Actions y entrada registrada en `docs/despliegue.md` con URL, fecha y hash de commit.
-* **Estado:** `Cumplido` (Verificado: Workflow de CI `.github/workflows/ci.yml` con escaneo de secretos Gitleaks, linter, pruebas de seguridad y build de producción).
+* **Estado:** `Cumplido` (Verificado: Workflow de CI `.github/workflows/ci.yml`, suite de pruebas automatizadas en `docs/pruebas.md`, etiqueta Git oficial `entrega-l2` y registro exhaustivo en `docs/registro-fases.md`).
 
